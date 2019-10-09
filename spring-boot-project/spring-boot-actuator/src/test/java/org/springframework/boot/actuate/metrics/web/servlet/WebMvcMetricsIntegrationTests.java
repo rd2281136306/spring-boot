@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -72,25 +72,21 @@ public class WebMvcMetricsIntegrationTests {
 
 	@Before
 	public void setupMockMvc() {
-		this.mvc = MockMvcBuilders.webAppContextSetup(this.context)
-				.addFilters(this.filter).build();
+		this.mvc = MockMvcBuilders.webAppContextSetup(this.context).addFilters(this.filter).build();
 	}
 
 	@Test
 	public void handledExceptionIsRecordedInMetricTag() throws Exception {
 		this.mvc.perform(get("/api/handledError")).andExpect(status().is5xxServerError());
-		assertThat(this.registry.get("http.server.requests")
-				.tags("exception", "Exception1", "status", "500").timer().count())
-						.isEqualTo(1L);
+		assertThat(this.registry.get("http.server.requests").tags("exception", "Exception1", "status", "500").timer()
+				.count()).isEqualTo(1L);
 	}
 
 	@Test
 	public void rethrownExceptionIsRecordedInMetricTag() {
-		assertThatCode(() -> this.mvc.perform(get("/api/rethrownError"))
-				.andExpect(status().is5xxServerError()));
-		assertThat(this.registry.get("http.server.requests")
-				.tags("exception", "Exception2", "status", "500").timer().count())
-						.isEqualTo(1L);
+		assertThatCode(() -> this.mvc.perform(get("/api/rethrownError")).andExpect(status().is5xxServerError()));
+		assertThat(this.registry.get("http.server.requests").tags("exception", "Exception2", "status", "500").timer()
+				.count()).isEqualTo(1L);
 	}
 
 	@Configuration
@@ -108,10 +104,8 @@ public class WebMvcMetricsIntegrationTests {
 		}
 
 		@Bean
-		public WebMvcMetricsFilter webMetricsFilter(MeterRegistry registry,
-				WebApplicationContext ctx) {
-			return new WebMvcMetricsFilter(registry, new DefaultWebMvcTagsProvider(),
-					"http.server.requests", true);
+		public WebMvcMetricsFilter webMetricsFilter(MeterRegistry registry, WebApplicationContext ctx) {
+			return new WebMvcMetricsFilter(registry, new DefaultWebMvcTagsProvider(), "http.server.requests", true);
 		}
 
 		@Configuration
@@ -152,8 +146,7 @@ public class WebMvcMetricsIntegrationTests {
 
 		@ExceptionHandler
 		ResponseEntity<String> handleError(Exception1 ex) {
-			return new ResponseEntity<>("this is a custom exception body",
-					HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>("this is a custom exception body", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		@ExceptionHandler

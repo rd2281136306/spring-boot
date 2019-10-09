@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -53,24 +53,20 @@ public class PropertiesMeterFilter implements MeterFilter {
 	}
 
 	@Override
-	public DistributionStatisticConfig configure(Meter.Id id,
-			DistributionStatisticConfig config) {
+	public DistributionStatisticConfig configure(Meter.Id id, DistributionStatisticConfig config) {
 		Distribution distribution = this.properties.getDistribution();
 		return DistributionStatisticConfig.builder()
-				.percentilesHistogram(
-						lookup(distribution.getPercentilesHistogram(), id, null))
+				.percentilesHistogram(lookup(distribution.getPercentilesHistogram(), id, null))
 				.percentiles(lookup(distribution.getPercentiles(), id, null))
-				.sla(convertSla(id.getType(), lookup(distribution.getSla(), id, null)))
-				.build().merge(config);
+				.sla(convertSla(id.getType(), lookup(distribution.getSla(), id, null))).build().merge(config);
 	}
 
 	private long[] convertSla(Meter.Type meterType, ServiceLevelAgreementBoundary[] sla) {
 		if (sla == null) {
 			return null;
 		}
-		long[] converted = Arrays.stream(sla)
-				.map((candidate) -> candidate.getValue(meterType))
-				.filter(Objects::nonNull).mapToLong(Long::longValue).toArray();
+		long[] converted = Arrays.stream(sla).map((candidate) -> candidate.getValue(meterType)).filter(Objects::nonNull)
+				.mapToLong(Long::longValue).toArray();
 		return (converted.length != 0) ? converted : null;
 	}
 

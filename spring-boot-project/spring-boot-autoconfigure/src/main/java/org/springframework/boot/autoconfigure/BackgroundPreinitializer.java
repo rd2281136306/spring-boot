@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,22 +45,18 @@ import org.springframework.http.converter.support.AllEncompassingFormHttpMessage
  * @since 1.3.0
  */
 @Order(LoggingApplicationListener.DEFAULT_ORDER + 1)
-public class BackgroundPreinitializer
-		implements ApplicationListener<SpringApplicationEvent> {
+public class BackgroundPreinitializer implements ApplicationListener<SpringApplicationEvent> {
 
-	private static final AtomicBoolean preinitializationStarted = new AtomicBoolean(
-			false);
+	private static final AtomicBoolean preinitializationStarted = new AtomicBoolean(false);
 
 	private static final CountDownLatch preinitializationComplete = new CountDownLatch(1);
 
 	@Override
 	public void onApplicationEvent(SpringApplicationEvent event) {
-		if (event instanceof ApplicationStartingEvent
-				&& preinitializationStarted.compareAndSet(false, true)) {
+		if (event instanceof ApplicationStartingEvent && preinitializationStarted.compareAndSet(false, true)) {
 			performPreinitialization();
 		}
-		if ((event instanceof ApplicationReadyEvent
-				|| event instanceof ApplicationFailedEvent)
+		if ((event instanceof ApplicationReadyEvent || event instanceof ApplicationFailedEvent)
 				&& preinitializationStarted.get()) {
 			try {
 				preinitializationComplete.await();

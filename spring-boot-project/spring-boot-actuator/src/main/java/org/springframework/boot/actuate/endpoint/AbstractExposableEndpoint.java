@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,8 +30,7 @@ import org.springframework.util.Assert;
  * @author Phillip Webb
  * @since 2.0.0
  */
-public abstract class AbstractExposableEndpoint<O extends Operation>
-		implements ExposableEndpoint<O> {
+public abstract class AbstractExposableEndpoint<O extends Operation> implements ExposableEndpoint<O> {
 
 	private final EndpointId id;
 
@@ -48,8 +47,7 @@ public abstract class AbstractExposableEndpoint<O extends Operation>
 	 * {@link #AbstractExposableEndpoint(EndpointId, boolean, Collection)}
 	 */
 	@Deprecated
-	public AbstractExposableEndpoint(String id, boolean enabledByDefault,
-			Collection<? extends O> operations) {
+	public AbstractExposableEndpoint(String id, boolean enabledByDefault, Collection<? extends O> operations) {
 		this(EndpointId.of(id), enabledByDefault, operations);
 	}
 
@@ -60,8 +58,7 @@ public abstract class AbstractExposableEndpoint<O extends Operation>
 	 * @param operations the endpoint operations
 	 * @since 2.0.6
 	 */
-	public AbstractExposableEndpoint(EndpointId id, boolean enabledByDefault,
-			Collection<? extends O> operations) {
+	public AbstractExposableEndpoint(EndpointId id, boolean enabledByDefault, Collection<? extends O> operations) {
 		Assert.notNull(id, "ID must not be null");
 		Assert.notNull(operations, "Operations must not be null");
 		this.id = id;

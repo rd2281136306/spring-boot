@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,20 +42,15 @@ public class ReactiveWebServerFactoryAutoConfigurationTests {
 
 	private ReactiveWebApplicationContextRunner contextRunner = new ReactiveWebApplicationContextRunner(
 			AnnotationConfigReactiveWebServerApplicationContext::new)
-					.withConfiguration(AutoConfigurations
-							.of(ReactiveWebServerFactoryAutoConfiguration.class));
+					.withConfiguration(AutoConfigurations.of(ReactiveWebServerFactoryAutoConfiguration.class));
 
 	@Test
 	public void createFromConfigClass() {
-		this.contextRunner.withUserConfiguration(MockWebServerConfiguration.class,
-				HttpHandlerConfiguration.class).run((context) -> {
-					assertThat(context.getBeansOfType(ReactiveWebServerFactory.class))
-							.hasSize(1);
-					assertThat(context.getBeansOfType(WebServerFactoryCustomizer.class))
-							.hasSize(1);
-					assertThat(context
-							.getBeansOfType(ReactiveWebServerFactoryCustomizer.class))
-									.hasSize(1);
+		this.contextRunner.withUserConfiguration(MockWebServerConfiguration.class, HttpHandlerConfiguration.class)
+				.run((context) -> {
+					assertThat(context.getBeansOfType(ReactiveWebServerFactory.class)).hasSize(1);
+					assertThat(context.getBeansOfType(WebServerFactoryCustomizer.class)).hasSize(1);
+					assertThat(context.getBeansOfType(ReactiveWebServerFactoryCustomizer.class)).hasSize(1);
 				});
 	}
 
@@ -70,31 +65,28 @@ public class ReactiveWebServerFactoryAutoConfigurationTests {
 	@Test
 	public void multipleHttpHandler() {
 		this.contextRunner
-				.withUserConfiguration(MockWebServerConfiguration.class,
-						HttpHandlerConfiguration.class, TooManyHttpHandlers.class)
+				.withUserConfiguration(MockWebServerConfiguration.class, HttpHandlerConfiguration.class,
+						TooManyHttpHandlers.class)
 				.run((context) -> assertThat(context.getStartupFailure())
 						.isInstanceOf(ApplicationContextException.class)
-						.hasMessageContaining("multiple HttpHandler beans : "
-								+ "httpHandler,additionalHttpHandler"));
+						.hasMessageContaining("multiple HttpHandler beans : " + "httpHandler,additionalHttpHandler"));
 	}
 
 	@Test
 	public void customizeReactiveWebServer() {
-		this.contextRunner.withUserConfiguration(MockWebServerConfiguration.class,
-				HttpHandlerConfiguration.class, ReactiveWebServerCustomization.class)
-				.run((context) -> assertThat(
-						context.getBean(MockReactiveWebServerFactory.class).getPort())
-								.isEqualTo(9000));
+		this.contextRunner
+				.withUserConfiguration(MockWebServerConfiguration.class, HttpHandlerConfiguration.class,
+						ReactiveWebServerCustomization.class)
+				.run((context) -> assertThat(context.getBean(MockReactiveWebServerFactory.class).getPort())
+						.isEqualTo(9000));
 	}
 
 	@Test
 	public void defaultWebServerIsTomcat() {
 		// Tomcat should be chosen over Netty if the Tomcat library is present.
-		this.contextRunner.withUserConfiguration(HttpHandlerConfiguration.class)
-				.withPropertyValues("server.port=0")
-				.run((context) -> assertThat(
-						context.getBean(ReactiveWebServerFactory.class))
-								.isInstanceOf(TomcatReactiveWebServerFactory.class));
+		this.contextRunner.withUserConfiguration(HttpHandlerConfiguration.class).withPropertyValues("server.port=0")
+				.run((context) -> assertThat(context.getBean(ReactiveWebServerFactory.class))
+						.isInstanceOf(TomcatReactiveWebServerFactory.class));
 	}
 
 	@Configuration

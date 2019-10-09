@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,20 +45,17 @@ public class JerseyManagementChildContextConfigurationTests {
 
 	@Test
 	public void resourceConfigIsCustomizedWithResourceConfigCustomizerBean() {
-		this.contextRunner.withUserConfiguration(CustomizerConfiguration.class)
-				.run((context) -> {
-					assertThat(context).hasSingleBean(ResourceConfig.class);
-					ResourceConfig config = context.getBean(ResourceConfig.class);
-					ResourceConfigCustomizer customizer = context
-							.getBean(ResourceConfigCustomizer.class);
-					verify(customizer).customize(config);
-				});
+		this.contextRunner.withUserConfiguration(CustomizerConfiguration.class).run((context) -> {
+			assertThat(context).hasSingleBean(ResourceConfig.class);
+			ResourceConfig config = context.getBean(ResourceConfig.class);
+			ResourceConfigCustomizer customizer = context.getBean(ResourceConfigCustomizer.class);
+			verify(customizer).customize(config);
+		});
 	}
 
 	@Test
 	public void resourceConfigCustomizerBeanIsNotRequired() {
-		this.contextRunner.run(
-				(context) -> assertThat(context).hasSingleBean(ResourceConfig.class));
+		this.contextRunner.run((context) -> assertThat(context).hasSingleBean(ResourceConfig.class));
 	}
 
 	@Configuration

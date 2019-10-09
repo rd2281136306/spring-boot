@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -62,6 +62,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Dave Syer
  * @author Andy Wilkinson
+ * @since 1.0.0
  * @see SpringApplication
  */
 public class SpringApplicationBuilder {
@@ -146,8 +147,7 @@ public class SpringApplicationBuilder {
 			if (!this.registerShutdownHookApplied) {
 				this.application.setRegisterShutdownHook(false);
 			}
-			initializers(new ParentContextApplicationContextInitializer(
-					this.parent.run(args)));
+			initializers(new ParentContextApplicationContextInitializer(this.parent.run(args)));
 		}
 	}
 
@@ -208,9 +208,8 @@ public class SpringApplicationBuilder {
 	 */
 	public SpringApplicationBuilder parent(Class<?>... sources) {
 		if (this.parent == null) {
-			this.parent = new SpringApplicationBuilder(sources)
-					.web(WebApplicationType.NONE).properties(this.defaultProperties)
-					.environment(this.environment);
+			this.parent = new SpringApplicationBuilder(sources).web(WebApplicationType.NONE)
+					.properties(this.defaultProperties).environment(this.environment);
 		}
 		else {
 			this.parent.sources(sources);
@@ -272,8 +271,7 @@ public class SpringApplicationBuilder {
 	 * @param cls the context class to use
 	 * @return the current builder
 	 */
-	public SpringApplicationBuilder contextClass(
-			Class<? extends ConfigurableApplicationContext> cls) {
+	public SpringApplicationBuilder contextClass(Class<? extends ConfigurableApplicationContext> cls) {
 		this.application.setApplicationContextClass(cls);
 		return this;
 	}
@@ -377,8 +375,7 @@ public class SpringApplicationBuilder {
 	 * @param addCommandLineProperties the flag to set. Default true.
 	 * @return the current builder
 	 */
-	public SpringApplicationBuilder addCommandLineProperties(
-			boolean addCommandLineProperties) {
+	public SpringApplicationBuilder addCommandLineProperties(boolean addCommandLineProperties) {
 		this.application.setAddCommandLineProperties(addCommandLineProperties);
 		return this;
 	}
@@ -457,16 +454,13 @@ public class SpringApplicationBuilder {
 	 */
 	public SpringApplicationBuilder profiles(String... profiles) {
 		this.additionalProfiles.addAll(Arrays.asList(profiles));
-		this.application.setAdditionalProfiles(
-				StringUtils.toStringArray(this.additionalProfiles));
+		this.application.setAdditionalProfiles(StringUtils.toStringArray(this.additionalProfiles));
 		return this;
 	}
 
-	private SpringApplicationBuilder additionalProfiles(
-			Collection<String> additionalProfiles) {
+	private SpringApplicationBuilder additionalProfiles(Collection<String> additionalProfiles) {
 		this.additionalProfiles = new LinkedHashSet<>(additionalProfiles);
-		this.application.setAdditionalProfiles(
-				StringUtils.toStringArray(this.additionalProfiles));
+		this.application.setAdditionalProfiles(StringUtils.toStringArray(this.additionalProfiles));
 		return this;
 	}
 
@@ -476,8 +470,7 @@ public class SpringApplicationBuilder {
 	 * @param beanNameGenerator the generator to set.
 	 * @return the current builder
 	 */
-	public SpringApplicationBuilder beanNameGenerator(
-			BeanNameGenerator beanNameGenerator) {
+	public SpringApplicationBuilder beanNameGenerator(BeanNameGenerator beanNameGenerator) {
 		this.application.setBeanNameGenerator(beanNameGenerator);
 		return this;
 	}
@@ -510,8 +503,7 @@ public class SpringApplicationBuilder {
 	 * @param initializers some initializers to add
 	 * @return the current builder
 	 */
-	public SpringApplicationBuilder initializers(
-			ApplicationContextInitializer<?>... initializers) {
+	public SpringApplicationBuilder initializers(ApplicationContextInitializer<?>... initializers) {
 		this.application.addInitializers(initializers);
 		return this;
 	}

@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,16 +32,15 @@ import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
  *
  * @author Andy Wilkinson
  * @author Madhura Bhave
+ * @since 2.0.0
  */
 public class CassandraContainer extends Container {
 
 	private static final int PORT = 9042;
 
 	public CassandraContainer() {
-		super("cassandra:3.11.1", PORT,
-				(container) -> container.waitingFor(new WaitStrategy(container))
-						.withStartupAttempts(5)
-						.withStartupTimeout(Duration.ofSeconds(120)));
+		super("cassandra:3.11.1", PORT, (container) -> container.waitingFor(new WaitStrategy(container))
+				.withStartupAttempts(5).withStartupTimeout(Duration.ofSeconds(120)));
 	}
 
 	private static final class WaitStrategy extends HostPortWaitStrategy {
@@ -57,8 +56,7 @@ public class CassandraContainer extends Container {
 			super.waitUntilReady();
 
 			try {
-				Unreliables.retryUntilTrue((int) this.startupTimeout.getSeconds(),
-						TimeUnit.SECONDS, checkConnection());
+				Unreliables.retryUntilTrue((int) this.startupTimeout.getSeconds(), TimeUnit.SECONDS, checkConnection());
 			}
 			catch (TimeoutException ex) {
 				throw new IllegalStateException(ex);
@@ -67,8 +65,7 @@ public class CassandraContainer extends Container {
 
 		private Callable<Boolean> checkConnection() {
 			return () -> {
-				try (Cluster cluster = Cluster.builder()
-						.withPort(this.container.getMappedPort(CassandraContainer.PORT))
+				try (Cluster cluster = Cluster.builder().withPort(this.container.getMappedPort(CassandraContainer.PORT))
 						.addContactPoint("localhost").build()) {
 					cluster.connect();
 					return true;

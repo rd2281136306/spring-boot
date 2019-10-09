@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -71,13 +71,11 @@ public class MetricsAutoConfiguration {
 	}
 
 	@Bean
-	public static MeterRegistryPostProcessor meterRegistryPostProcessor(
-			ObjectProvider<List<MeterBinder>> meterBinders,
+	public static MeterRegistryPostProcessor meterRegistryPostProcessor(ObjectProvider<List<MeterBinder>> meterBinders,
 			ObjectProvider<List<MeterFilter>> meterFilters,
 			ObjectProvider<List<MeterRegistryCustomizer<?>>> meterRegistryCustomizers,
 			ObjectProvider<MetricsProperties> metricsProperties) {
-		return new MeterRegistryPostProcessor(meterBinders, meterFilters,
-				meterRegistryCustomizers, metricsProperties);
+		return new MeterRegistryPostProcessor(meterBinders, meterFilters, meterRegistryCustomizers, metricsProperties);
 	}
 
 	@Bean
@@ -120,8 +118,7 @@ public class MetricsAutoConfiguration {
 	static class MeterBindersConfiguration {
 
 		@Bean
-		@ConditionalOnClass(name = { "ch.qos.logback.classic.LoggerContext",
-				"org.slf4j.LoggerFactory" })
+		@ConditionalOnClass(name = { "ch.qos.logback.classic.LoggerContext", "org.slf4j.LoggerFactory" })
 		@Conditional(LogbackLoggingCondition.class)
 		@ConditionalOnMissingBean
 		@ConditionalOnProperty(value = "management.metrics.binders.logback.enabled", matchIfMissing = true)
@@ -155,18 +152,14 @@ public class MetricsAutoConfiguration {
 	static class LogbackLoggingCondition extends SpringBootCondition {
 
 		@Override
-		public ConditionOutcome getMatchOutcome(ConditionContext context,
-				AnnotatedTypeMetadata metadata) {
+		public ConditionOutcome getMatchOutcome(ConditionContext context, AnnotatedTypeMetadata metadata) {
 			ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
-			ConditionMessage.Builder message = ConditionMessage
-					.forCondition("LogbackLoggingCondition");
+			ConditionMessage.Builder message = ConditionMessage.forCondition("LogbackLoggingCondition");
 			if (loggerFactory instanceof LoggerContext) {
-				return ConditionOutcome.match(
-						message.because("ILoggerFactory is a Logback LoggerContext"));
+				return ConditionOutcome.match(message.because("ILoggerFactory is a Logback LoggerContext"));
 			}
-			return ConditionOutcome
-					.noMatch(message.because("ILoggerFactory is an instance of "
-							+ loggerFactory.getClass().getCanonicalName()));
+			return ConditionOutcome.noMatch(
+					message.because("ILoggerFactory is an instance of " + loggerFactory.getClass().getCanonicalName()));
 		}
 
 	}

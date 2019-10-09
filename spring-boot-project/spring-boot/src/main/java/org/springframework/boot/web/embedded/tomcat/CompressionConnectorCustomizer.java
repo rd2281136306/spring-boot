@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -58,12 +58,10 @@ class CompressionConnectorCustomizer implements TomcatConnectorCustomizer {
 		Compression compression = this.compression;
 		upgradeProtocol.setCompression("on");
 		upgradeProtocol.setCompressionMinSize(compression.getMinResponseSize());
-		upgradeProtocol.setCompressibleMimeType(
-				StringUtils.arrayToCommaDelimitedString(compression.getMimeTypes()));
+		upgradeProtocol.setCompressibleMimeType(StringUtils.arrayToCommaDelimitedString(compression.getMimeTypes()));
 		if (this.compression.getExcludedUserAgents() != null) {
-			upgradeProtocol
-					.setNoCompressionUserAgents(StringUtils.arrayToCommaDelimitedString(
-							this.compression.getExcludedUserAgents()));
+			upgradeProtocol.setNoCompressionUserAgents(
+					StringUtils.arrayToCommaDelimitedString(this.compression.getExcludedUserAgents()));
 		}
 	}
 
@@ -71,11 +69,10 @@ class CompressionConnectorCustomizer implements TomcatConnectorCustomizer {
 		Compression compression = this.compression;
 		protocol.setCompression("on");
 		protocol.setCompressionMinSize(compression.getMinResponseSize());
-		protocol.setCompressibleMimeType(
-				StringUtils.arrayToCommaDelimitedString(compression.getMimeTypes()));
+		protocol.setCompressibleMimeType(StringUtils.arrayToCommaDelimitedString(compression.getMimeTypes()));
 		if (this.compression.getExcludedUserAgents() != null) {
-			protocol.setNoCompressionUserAgents(StringUtils.arrayToCommaDelimitedString(
-					this.compression.getExcludedUserAgents()));
+			protocol.setNoCompressionUserAgents(
+					StringUtils.arrayToCommaDelimitedString(this.compression.getExcludedUserAgents()));
 		}
 	}
 

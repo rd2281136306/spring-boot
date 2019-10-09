@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -78,8 +78,8 @@ public class WebServicesAutoConfiguration {
 		servlet.setApplicationContext(applicationContext);
 		String path = this.properties.getPath();
 		String urlMapping = path.endsWith("/") ? path + "*" : path + "/*";
-		ServletRegistrationBean<MessageDispatcherServlet> registration = new ServletRegistrationBean<>(
-				servlet, urlMapping);
+		ServletRegistrationBean<MessageDispatcherServlet> registration = new ServletRegistrationBean<>(servlet,
+				urlMapping);
 		WebServicesProperties.Servlet servletProperties = this.properties.getServlet();
 		registration.setLoadOnStartup(servletProperties.getLoadOnStartup());
 		servletProperties.getInit().forEach(registration::addInitParameter);
@@ -109,42 +109,34 @@ public class WebServicesAutoConfiguration {
 		}
 
 		@Override
-		public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry)
-				throws BeansException {
+		public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
 			Binder binder = Binder.get(this.applicationContext.getEnvironment());
-			List<String> wsdlLocations = binder
-					.bind("spring.webservices.wsdl-locations",
-							Bindable.listOf(String.class))
+			List<String> wsdlLocations = binder.bind("spring.webservices.wsdl-locations", Bindable.listOf(String.class))
 					.orElse(Collections.emptyList());
 			for (String wsdlLocation : wsdlLocations) {
-				registerBeans(wsdlLocation, "*.wsdl", SimpleWsdl11Definition.class,
-						registry);
+				registerBeans(wsdlLocation, "*.wsdl", SimpleWsdl11Definition.class, registry);
 				registerBeans(wsdlLocation, "*.xsd", SimpleXsdSchema.class, registry);
 			}
 		}
 
 		@Override
-		public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
-				throws BeansException {
+		public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		}
 
-		private void registerBeans(String location, String pattern, Class<?> type,
-				BeanDefinitionRegistry registry) {
+		private void registerBeans(String location, String pattern, Class<?> type, BeanDefinitionRegistry registry) {
 			for (Resource resource : getResources(location, pattern)) {
 				RootBeanDefinition beanDefinition = new RootBeanDefinition(type);
 				ConstructorArgumentValues constructorArguments = new ConstructorArgumentValues();
 				constructorArguments.addIndexedArgumentValue(0, resource);
 				beanDefinition.setConstructorArgumentValues(constructorArguments);
-				registry.registerBeanDefinition(
-						StringUtils.stripFilenameExtension(resource.getFilename()),
+				registry.registerBeanDefinition(StringUtils.stripFilenameExtension(resource.getFilename()),
 						beanDefinition);
 			}
 		}
 
 		private Resource[] getResources(String location, String pattern) {
 			try {
-				return this.applicationContext
-						.getResources(ensureTrailingSlash(location) + pattern);
+				return this.applicationContext.getResources(ensureTrailingSlash(location) + pattern);
 			}
 			catch (IOException ex) {
 				return new Resource[0];

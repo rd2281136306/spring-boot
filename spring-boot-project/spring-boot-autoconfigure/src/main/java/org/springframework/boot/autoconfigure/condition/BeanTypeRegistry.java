@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -62,7 +62,6 @@ import org.springframework.util.StringUtils;
  *
  * @author Phillip Webb
  * @author Andy Wilkinson
- * @since 1.2.0
  */
 final class BeanTypeRegistry implements SmartInitializingSingleton {
 
@@ -90,8 +89,7 @@ final class BeanTypeRegistry implements SmartInitializingSingleton {
 	static BeanTypeRegistry get(ListableBeanFactory beanFactory) {
 		Assert.isInstanceOf(DefaultListableBeanFactory.class, beanFactory);
 		DefaultListableBeanFactory listableBeanFactory = (DefaultListableBeanFactory) beanFactory;
-		Assert.isTrue(listableBeanFactory.isAllowEagerClassLoading(),
-				"Bean factory must allow eager class loading");
+		Assert.isTrue(listableBeanFactory.isAllowEagerClassLoading(), "Bean factory must allow eager class loading");
 		if (!listableBeanFactory.containsLocalBean(BEAN_NAME)) {
 			BeanDefinition bd = new RootBeanDefinition(BeanTypeRegistry.class);
 			bd.getConstructorArgumentValues().addIndexedArgumentValue(0, beanFactory);
@@ -112,10 +110,8 @@ final class BeanTypeRegistry implements SmartInitializingSingleton {
 	Set<String> getNamesForType(Class<?> type) {
 		updateTypesIfNecessary();
 		return this.beanTypes.entrySet().stream()
-				.filter((entry) -> entry.getValue() != null
-						&& type.isAssignableFrom(entry.getValue()))
-				.map(Map.Entry::getKey)
-				.collect(Collectors.toCollection(LinkedHashSet::new));
+				.filter((entry) -> entry.getValue() != null && type.isAssignableFrom(entry.getValue()))
+				.map(Map.Entry::getKey).collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	/**
@@ -130,10 +126,9 @@ final class BeanTypeRegistry implements SmartInitializingSingleton {
 	Set<String> getNamesForAnnotation(Class<? extends Annotation> annotation) {
 		updateTypesIfNecessary();
 		return this.beanTypes.entrySet().stream()
-				.filter((entry) -> entry.getValue() != null && AnnotationUtils
-						.findAnnotation(entry.getValue(), annotation) != null)
-				.map(Map.Entry::getKey)
-				.collect(Collectors.toCollection(LinkedHashSet::new));
+				.filter((entry) -> entry.getValue() != null
+						&& AnnotationUtils.findAnnotation(entry.getValue(), annotation) != null)
+				.map(Map.Entry::getKey).collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	@Override
@@ -184,18 +179,14 @@ final class BeanTypeRegistry implements SmartInitializingSingleton {
 		}
 	}
 
-	private void addBeanTypeForNonAliasDefinition(String name,
-			RootBeanDefinition beanDefinition) {
+	private void addBeanTypeForNonAliasDefinition(String name, RootBeanDefinition beanDefinition) {
 		try {
-			if (!beanDefinition.isAbstract()
-					&& !requiresEagerInit(beanDefinition.getFactoryBeanName())) {
+			if (!beanDefinition.isAbstract() && !requiresEagerInit(beanDefinition.getFactoryBeanName())) {
 				String factoryName = BeanFactory.FACTORY_BEAN_PREFIX + name;
 				if (this.beanFactory.isFactoryBean(factoryName)) {
-					Class<?> factoryBeanGeneric = getFactoryBeanGeneric(this.beanFactory,
-							beanDefinition);
+					Class<?> factoryBeanGeneric = getFactoryBeanGeneric(this.beanFactory, beanDefinition);
 					this.beanTypes.put(name, factoryBeanGeneric);
-					this.beanTypes.put(factoryName,
-							this.beanFactory.getType(factoryName));
+					this.beanTypes.put(factoryName, this.beanFactory.getType(factoryName));
 				}
 				else {
 					this.beanTypes.put(name, this.beanFactory.getType(name));
@@ -237,8 +228,7 @@ final class BeanTypeRegistry implements SmartInitializingSingleton {
 	 * @param definition the bean definition
 	 * @return the generic type of the {@link FactoryBean} or {@code null}
 	 */
-	private Class<?> getFactoryBeanGeneric(ConfigurableListableBeanFactory beanFactory,
-			BeanDefinition definition) {
+	private Class<?> getFactoryBeanGeneric(ConfigurableListableBeanFactory beanFactory, BeanDefinition definition) {
 		try {
 			return doGetFactoryBeanGeneric(beanFactory, definition);
 		}
@@ -247,8 +237,7 @@ final class BeanTypeRegistry implements SmartInitializingSingleton {
 		}
 	}
 
-	private Class<?> doGetFactoryBeanGeneric(ConfigurableListableBeanFactory beanFactory,
-			BeanDefinition definition)
+	private Class<?> doGetFactoryBeanGeneric(ConfigurableListableBeanFactory beanFactory, BeanDefinition definition)
 			throws Exception, ClassNotFoundException, LinkageError {
 		if (StringUtils.hasLength(definition.getFactoryBeanName())
 				&& StringUtils.hasLength(definition.getFactoryMethodName())) {
@@ -260,32 +249,25 @@ final class BeanTypeRegistry implements SmartInitializingSingleton {
 		return null;
 	}
 
-	private Class<?> getConfigurationClassFactoryBeanGeneric(
-			ConfigurableListableBeanFactory beanFactory, BeanDefinition definition)
-			throws Exception {
+	private Class<?> getConfigurationClassFactoryBeanGeneric(ConfigurableListableBeanFactory beanFactory,
+			BeanDefinition definition) throws Exception {
 		Method method = getFactoryMethod(beanFactory, definition);
-		Class<?> generic = ResolvableType.forMethodReturnType(method)
-				.as(FactoryBean.class).resolveGeneric();
-		if ((generic == null || generic.equals(Object.class))
-				&& definition.hasAttribute(FACTORY_BEAN_OBJECT_TYPE)) {
-			generic = getTypeFromAttribute(
-					definition.getAttribute(FACTORY_BEAN_OBJECT_TYPE));
+		Class<?> generic = ResolvableType.forMethodReturnType(method).as(FactoryBean.class).resolveGeneric();
+		if ((generic == null || generic.equals(Object.class)) && definition.hasAttribute(FACTORY_BEAN_OBJECT_TYPE)) {
+			generic = getTypeFromAttribute(definition.getAttribute(FACTORY_BEAN_OBJECT_TYPE));
 		}
 		return generic;
 	}
 
-	private Method getFactoryMethod(ConfigurableListableBeanFactory beanFactory,
-			BeanDefinition definition) throws Exception {
+	private Method getFactoryMethod(ConfigurableListableBeanFactory beanFactory, BeanDefinition definition)
+			throws Exception {
 		if (definition instanceof AnnotatedBeanDefinition) {
-			MethodMetadata factoryMethodMetadata = ((AnnotatedBeanDefinition) definition)
-					.getFactoryMethodMetadata();
+			MethodMetadata factoryMethodMetadata = ((AnnotatedBeanDefinition) definition).getFactoryMethodMetadata();
 			if (factoryMethodMetadata instanceof StandardMethodMetadata) {
-				return ((StandardMethodMetadata) factoryMethodMetadata)
-						.getIntrospectedMethod();
+				return ((StandardMethodMetadata) factoryMethodMetadata).getIntrospectedMethod();
 			}
 		}
-		BeanDefinition factoryDefinition = beanFactory
-				.getBeanDefinition(definition.getFactoryBeanName());
+		BeanDefinition factoryDefinition = beanFactory.getBeanDefinition(definition.getFactoryBeanName());
 		Class<?> factoryClass = ClassUtils.forName(factoryDefinition.getBeanClassName(),
 				beanFactory.getBeanClassLoader());
 		return getFactoryMethod(definition, factoryClass);
@@ -306,10 +288,8 @@ final class BeanTypeRegistry implements SmartInitializingSingleton {
 		return uniqueMethod;
 	}
 
-	private Method[] getCandidateFactoryMethods(BeanDefinition definition,
-			Class<?> factoryClass) {
-		return (shouldConsiderNonPublicMethods(definition)
-				? ReflectionUtils.getAllDeclaredMethods(factoryClass)
+	private Method[] getCandidateFactoryMethods(BeanDefinition definition, Class<?> factoryClass) {
+		return (shouldConsiderNonPublicMethods(definition) ? ReflectionUtils.getAllDeclaredMethods(factoryClass)
 				: factoryClass.getMethods());
 	}
 
@@ -322,23 +302,17 @@ final class BeanTypeRegistry implements SmartInitializingSingleton {
 		return Arrays.equals(candidate.getParameterTypes(), current.getParameterTypes());
 	}
 
-	private Class<?> getDirectFactoryBeanGeneric(
-			ConfigurableListableBeanFactory beanFactory, BeanDefinition definition)
+	private Class<?> getDirectFactoryBeanGeneric(ConfigurableListableBeanFactory beanFactory, BeanDefinition definition)
 			throws ClassNotFoundException, LinkageError {
-		Class<?> factoryBeanClass = ClassUtils.forName(definition.getBeanClassName(),
-				beanFactory.getBeanClassLoader());
-		Class<?> generic = ResolvableType.forClass(factoryBeanClass).as(FactoryBean.class)
-				.resolveGeneric();
-		if ((generic == null || generic.equals(Object.class))
-				&& definition.hasAttribute(FACTORY_BEAN_OBJECT_TYPE)) {
-			generic = getTypeFromAttribute(
-					definition.getAttribute(FACTORY_BEAN_OBJECT_TYPE));
+		Class<?> factoryBeanClass = ClassUtils.forName(definition.getBeanClassName(), beanFactory.getBeanClassLoader());
+		Class<?> generic = ResolvableType.forClass(factoryBeanClass).as(FactoryBean.class).resolveGeneric();
+		if ((generic == null || generic.equals(Object.class)) && definition.hasAttribute(FACTORY_BEAN_OBJECT_TYPE)) {
+			generic = getTypeFromAttribute(definition.getAttribute(FACTORY_BEAN_OBJECT_TYPE));
 		}
 		return generic;
 	}
 
-	private Class<?> getTypeFromAttribute(Object attribute)
-			throws ClassNotFoundException, LinkageError {
+	private Class<?> getTypeFromAttribute(Object attribute) throws ClassNotFoundException, LinkageError {
 		if (attribute instanceof Class<?>) {
 			return (Class<?>) attribute;
 		}

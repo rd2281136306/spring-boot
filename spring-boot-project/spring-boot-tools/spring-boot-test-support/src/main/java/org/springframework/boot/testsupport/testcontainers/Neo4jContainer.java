@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,14 +31,15 @@ import org.testcontainers.containers.wait.strategy.HostPortWaitStrategy;
  *
  * @author Andy Wilkinson
  * @author Madhura Bhave
+ * @since 2.0.0
  */
 public class Neo4jContainer extends Container {
 
 	private static final int PORT = 7687;
 
 	public Neo4jContainer() {
-		super("neo4j:3.3.1", PORT, (container) -> container
-				.waitingFor(new WaitStrategy(container)).withEnv("NEO4J_AUTH", "none"));
+		super("neo4j:3.3.1", PORT,
+				(container) -> container.waitingFor(new WaitStrategy(container)).withEnv("NEO4J_AUTH", "none"));
 	}
 
 	private static final class WaitStrategy extends HostPortWaitStrategy {
@@ -53,14 +54,12 @@ public class Neo4jContainer extends Container {
 		public void waitUntilReady() {
 			super.waitUntilReady();
 			Configuration configuration = new Configuration.Builder()
-					.uri("bolt://localhost:"
-							+ this.container.getMappedPort(Neo4jContainer.PORT))
-					.build();
+					.uri("bolt://localhost:" + this.container.getMappedPort(Neo4jContainer.PORT)).build();
 			SessionFactory sessionFactory = new SessionFactory(configuration,
 					"org.springframework.boot.test.autoconfigure.data.neo4j");
 			try {
-				Unreliables.retryUntilTrue((int) this.startupTimeout.getSeconds(),
-						TimeUnit.SECONDS, checkConnection(sessionFactory));
+				Unreliables.retryUntilTrue((int) this.startupTimeout.getSeconds(), TimeUnit.SECONDS,
+						checkConnection(sessionFactory));
 			}
 			catch (TimeoutException ex) {
 				throw new IllegalStateException(ex);

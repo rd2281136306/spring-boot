@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,8 +51,7 @@ public class FileSystemWatcherTests {
 
 	private FileSystemWatcher watcher;
 
-	private List<Set<ChangedFiles>> changes = Collections
-			.synchronizedList(new ArrayList<Set<ChangedFiles>>());
+	private List<Set<ChangedFiles>> changes = Collections.synchronizedList(new ArrayList<Set<ChangedFiles>>());
 
 	@Rule
 	public TemporaryFolder temp = new TemporaryFolder();
@@ -260,8 +259,7 @@ public class FileSystemWatcherTests {
 		File file = touch(new File(folder, "file.txt"));
 		File trigger = touch(new File(folder, "trigger.txt"));
 		this.watcher.addSourceFolder(folder);
-		this.watcher.setTriggerFilter(
-				(candidate) -> candidate.getName().equals("trigger.txt"));
+		this.watcher.setTriggerFilter((candidate) -> candidate.getName().equals("trigger.txt"));
 		this.watcher.start();
 		FileCopyUtils.copy("abc".getBytes(), file);
 		Thread.sleep(100);
@@ -276,10 +274,8 @@ public class FileSystemWatcherTests {
 	}
 
 	private void setupWatcher(long pollingInterval, long quietPeriod) {
-		this.watcher = new FileSystemWatcher(false, Duration.ofMillis(pollingInterval),
-				Duration.ofMillis(quietPeriod));
-		this.watcher.addListener(
-				(changeSet) -> FileSystemWatcherTests.this.changes.add(changeSet));
+		this.watcher = new FileSystemWatcher(false, Duration.ofMillis(pollingInterval), Duration.ofMillis(quietPeriod));
+		this.watcher.addListener((changeSet) -> FileSystemWatcherTests.this.changes.add(changeSet));
 	}
 
 	private File startWithNewFolder() throws IOException {

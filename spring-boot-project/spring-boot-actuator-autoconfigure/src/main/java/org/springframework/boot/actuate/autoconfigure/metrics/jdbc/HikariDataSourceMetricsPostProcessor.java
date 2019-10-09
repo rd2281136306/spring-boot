@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,8 +38,7 @@ import org.springframework.core.Ordered;
  */
 class HikariDataSourceMetricsPostProcessor implements BeanPostProcessor, Ordered {
 
-	private static final Log logger = LogFactory
-			.getLog(HikariDataSourceMetricsPostProcessor.class);
+	private static final Log logger = LogFactory.getLog(HikariDataSourceMetricsPostProcessor.class);
 
 	private final ApplicationContext context;
 
@@ -65,12 +64,10 @@ class HikariDataSourceMetricsPostProcessor implements BeanPostProcessor, Ordered
 		return null;
 	}
 
-	private void bindMetricsRegistryToHikariDataSource(MeterRegistry registry,
-			HikariDataSource dataSource) {
+	private void bindMetricsRegistryToHikariDataSource(MeterRegistry registry, HikariDataSource dataSource) {
 		if (!hasExisingMetrics(dataSource)) {
 			try {
-				dataSource.setMetricsTrackerFactory(
-						new MicrometerMetricsTrackerFactory(registry));
+				dataSource.setMetricsTrackerFactory(new MicrometerMetricsTrackerFactory(registry));
 			}
 			catch (Exception ex) {
 				logger.warn("Failed to bind Hikari metrics: " + ex.getMessage());
@@ -79,8 +76,7 @@ class HikariDataSourceMetricsPostProcessor implements BeanPostProcessor, Ordered
 	}
 
 	private boolean hasExisingMetrics(HikariDataSource dataSource) {
-		return dataSource.getMetricRegistry() != null
-				|| dataSource.getMetricsTrackerFactory() != null;
+		return dataSource.getMetricRegistry() != null || dataSource.getMetricsTrackerFactory() != null;
 	}
 
 	private MeterRegistry getMeterRegistry() {

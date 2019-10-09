@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -77,8 +77,8 @@ public class DataSourcePoolMetricsAutoConfiguration {
 
 		private void bindDataSourceToRegistry(String beanName, DataSource dataSource) {
 			String dataSourceName = getDataSourceName(beanName);
-			new DataSourcePoolMetrics(dataSource, this.metadataProviders, dataSourceName,
-					Collections.emptyList()).bindTo(this.registry);
+			new DataSourcePoolMetrics(dataSource, this.metadataProviders, dataSourceName, Collections.emptyList())
+					.bindTo(this.registry);
 		}
 
 		/**
@@ -89,8 +89,7 @@ public class DataSourcePoolMetricsAutoConfiguration {
 		private String getDataSourceName(String beanName) {
 			if (beanName.length() > DATASOURCE_SUFFIX.length()
 					&& StringUtils.endsWithIgnoreCase(beanName, DATASOURCE_SUFFIX)) {
-				return beanName.substring(0,
-						beanName.length() - DATASOURCE_SUFFIX.length());
+				return beanName.substring(0, beanName.length() - DATASOURCE_SUFFIX.length());
 			}
 			return beanName;
 		}
