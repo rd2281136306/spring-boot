@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,30 +41,24 @@ public class CacheMetricsRegistrarTests {
 	public void bindToSupportedCache() {
 		CacheMetricsRegistrar registrar = new CacheMetricsRegistrar(this.meterRegistry,
 				Collections.singleton(new CaffeineCacheMeterBinderProvider()));
-		assertThat(registrar.bindCacheToRegistry(
-				new CaffeineCache("test", Caffeine.newBuilder().build()))).isTrue();
-		assertThat(this.meterRegistry.get("cache.gets").tags("name", "test").meter())
-				.isNotNull();
+		assertThat(registrar.bindCacheToRegistry(new CaffeineCache("test", Caffeine.newBuilder().build()))).isTrue();
+		assertThat(this.meterRegistry.get("cache.gets").tags("name", "test").meter()).isNotNull();
 	}
 
 	@Test
 	public void bindToSupportedCacheWrappedInTransactionProxy() {
 		CacheMetricsRegistrar registrar = new CacheMetricsRegistrar(this.meterRegistry,
 				Collections.singleton(new CaffeineCacheMeterBinderProvider()));
-		assertThat(registrar.bindCacheToRegistry(new TransactionAwareCacheDecorator(
-				new CaffeineCache("test", Caffeine.newBuilder().build())))).isTrue();
-		assertThat(this.meterRegistry.get("cache.gets").tags("name", "test").meter())
-				.isNotNull();
+		assertThat(registrar.bindCacheToRegistry(
+				new TransactionAwareCacheDecorator(new CaffeineCache("test", Caffeine.newBuilder().build())))).isTrue();
+		assertThat(this.meterRegistry.get("cache.gets").tags("name", "test").meter()).isNotNull();
 	}
 
 	@Test
 	public void bindToUnsupportedCache() {
-		CacheMetricsRegistrar registrar = new CacheMetricsRegistrar(this.meterRegistry,
-				Collections.emptyList());
-		assertThat(registrar.bindCacheToRegistry(
-				new CaffeineCache("test", Caffeine.newBuilder().build()))).isFalse();
-		assertThat(this.meterRegistry.find("cache.gets").tags("name", "test").meter())
-				.isNull();
+		CacheMetricsRegistrar registrar = new CacheMetricsRegistrar(this.meterRegistry, Collections.emptyList());
+		assertThat(registrar.bindCacheToRegistry(new CaffeineCache("test", Caffeine.newBuilder().build()))).isFalse();
+		assertThat(this.meterRegistry.find("cache.gets").tags("name", "test").meter()).isNull();
 	}
 
 }

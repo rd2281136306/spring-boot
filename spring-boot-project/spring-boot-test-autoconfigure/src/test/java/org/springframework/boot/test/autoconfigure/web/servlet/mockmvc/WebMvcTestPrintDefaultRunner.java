@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,6 +16,7 @@
 
 package org.springframework.boot.test.autoconfigure.web.servlet.mockmvc;
 
+import org.assertj.core.matcher.AssertionMatcher;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
@@ -23,8 +24,7 @@ import org.junit.runners.model.Statement;
 import org.springframework.boot.test.rule.OutputCapture;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test runner used for {@link WebMvcTestPrintDefaultIntegrationTests}.
@@ -43,10 +43,24 @@ public class WebMvcTestPrintDefaultRunner extends SpringJUnit4ClassRunner {
 		statement = new AlwaysPassStatement(statement);
 		OutputCapture outputCapture = new OutputCapture();
 		if (frameworkMethod.getName().equals("shouldPrint")) {
-			outputCapture.expect(containsString("HTTP Method"));
+			outputCapture.expect(new AssertionMatcher<String>() {
+
+				@Override
+				public void assertion(String actual) throws AssertionError {
+					assertThat(actual).containsOnlyOnce("HTTP Method");
+				}
+
+			});
 		}
 		else if (frameworkMethod.getName().equals("shouldNotPrint")) {
-			outputCapture.expect(not(containsString("HTTP Method")));
+			outputCapture.expect(new AssertionMatcher<String>() {
+
+				@Override
+				public void assertion(String actual) throws AssertionError {
+					assertThat(actual).doesNotContain("HTTP Method");
+				}
+
+			});
 		}
 		else {
 			throw new IllegalStateException("Unexpected test method");

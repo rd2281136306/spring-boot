@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,7 +44,8 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConditionalOnClass(EmbeddedJMS.class)
-@ConditionalOnProperty(prefix = "spring.artemis.embedded", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "spring.artemis.embedded", name = "enabled", havingValue = "true",
+		matchIfMissing = true)
 class ArtemisEmbeddedServerConfiguration {
 
 	private final ArtemisProperties properties;
@@ -61,23 +62,19 @@ class ArtemisEmbeddedServerConfiguration {
 			ObjectProvider<TopicConfiguration> topicsConfiguration) {
 		this.properties = properties;
 		this.configurationCustomizers = configurationCustomizers;
-		this.queuesConfiguration = queuesConfiguration.orderedStream()
-				.collect(Collectors.toList());
-		this.topicsConfiguration = topicsConfiguration.orderedStream()
-				.collect(Collectors.toList());
+		this.queuesConfiguration = queuesConfiguration.orderedStream().collect(Collectors.toList());
+		this.topicsConfiguration = topicsConfiguration.orderedStream().collect(Collectors.toList());
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public org.apache.activemq.artemis.core.config.Configuration artemisConfiguration() {
-		return new ArtemisEmbeddedConfigurationFactory(this.properties)
-				.createConfiguration();
+		return new ArtemisEmbeddedConfigurationFactory(this.properties).createConfiguration();
 	}
 
 	@Bean(initMethod = "start", destroyMethod = "stop")
 	@ConditionalOnMissingBean
-	public EmbeddedJMS artemisServer(
-			org.apache.activemq.artemis.core.config.Configuration configuration,
+	public EmbeddedJMS artemisServer(org.apache.activemq.artemis.core.config.Configuration configuration,
 			JMSConfiguration jmsConfiguration) {
 		EmbeddedJMS server = new EmbeddedJMS();
 		customize(configuration);
@@ -87,10 +84,8 @@ class ArtemisEmbeddedServerConfiguration {
 		return server;
 	}
 
-	private void customize(
-			org.apache.activemq.artemis.core.config.Configuration configuration) {
-		this.configurationCustomizers.orderedStream()
-				.forEach((customizer) -> customizer.customize(configuration));
+	private void customize(org.apache.activemq.artemis.core.config.Configuration configuration) {
+		this.configurationCustomizers.orderedStream().forEach((customizer) -> customizer.customize(configuration));
 	}
 
 	@Bean

@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,7 +43,8 @@ import static org.springframework.boot.test.autoconfigure.AutoConfigurationImpor
  */
 @RunWith(SpringRunner.class)
 @JdbcTest
-@TestPropertySource(properties = "spring.datasource.schema=classpath:org/springframework/boot/test/autoconfigure/jdbc/schema.sql")
+@TestPropertySource(
+		properties = "spring.datasource.schema=classpath:org/springframework/boot/test/autoconfigure/jdbc/schema.sql")
 public class JdbcTestIntegrationTests {
 
 	@Autowired
@@ -68,27 +69,24 @@ public class JdbcTestIntegrationTests {
 
 	@Test
 	public void replacesDefinedDataSourceWithEmbeddedDefault() throws Exception {
-		String product = this.dataSource.getConnection().getMetaData()
-				.getDatabaseProductName();
+		String product = this.dataSource.getConnection().getMetaData().getDatabaseProductName();
 		assertThat(product).isEqualTo("H2");
 	}
 
 	@Test
 	public void didNotInjectExampleRepository() {
-		assertThatExceptionOfType(NoSuchBeanDefinitionException.class).isThrownBy(
-				() -> this.applicationContext.getBean(ExampleRepository.class));
+		assertThatExceptionOfType(NoSuchBeanDefinitionException.class)
+				.isThrownBy(() -> this.applicationContext.getBean(ExampleRepository.class));
 	}
 
 	@Test
 	public void flywayAutoConfigurationWasImported() {
-		assertThat(this.applicationContext)
-				.has(importedAutoConfiguration(FlywayAutoConfiguration.class));
+		assertThat(this.applicationContext).has(importedAutoConfiguration(FlywayAutoConfiguration.class));
 	}
 
 	@Test
 	public void liquibaseAutoConfigurationWasImported() {
-		assertThat(this.applicationContext)
-				.has(importedAutoConfiguration(LiquibaseAutoConfiguration.class));
+		assertThat(this.applicationContext).has(importedAutoConfiguration(LiquibaseAutoConfiguration.class));
 	}
 
 }

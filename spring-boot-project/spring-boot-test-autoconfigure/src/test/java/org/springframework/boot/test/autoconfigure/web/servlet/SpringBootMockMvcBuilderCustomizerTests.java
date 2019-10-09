@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -61,8 +61,7 @@ public class SpringBootMockMvcBuilderCustomizerTests {
 				.getBean("filterRegistrationBean");
 		Filter testFilter = (Filter) context.getBean("testFilter");
 		Filter otherTestFilter = registrationBean.getFilter();
-		List<Filter> filters = (List<Filter>) ReflectionTestUtils.getField(builder,
-				"filters");
+		List<Filter> filters = (List<Filter>) ReflectionTestUtils.getField(builder, "filters");
 		assertThat(filters).containsExactlyInAnyOrder(testFilter, otherTestFilter);
 	}
 
@@ -103,8 +102,7 @@ public class SpringBootMockMvcBuilderCustomizerTests {
 		}
 
 		@Override
-		public void doFilter(ServletRequest request, ServletResponse response,
-				FilterChain chain) {
+		public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
 
 		}
 
@@ -123,8 +121,7 @@ public class SpringBootMockMvcBuilderCustomizerTests {
 		}
 
 		@Override
-		public void doFilter(ServletRequest request, ServletResponse response,
-				FilterChain chain) {
+		public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) {
 
 		}
 

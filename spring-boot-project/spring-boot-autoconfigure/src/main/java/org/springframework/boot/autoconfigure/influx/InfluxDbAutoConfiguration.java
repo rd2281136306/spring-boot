@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -54,22 +54,18 @@ public class InfluxDbAutoConfiguration {
 			ObjectProvider<InfluxDbOkHttpClientBuilderProvider> builder,
 			ObjectProvider<OkHttpClient.Builder> deprecatedBuilder) {
 		this.properties = properties;
-		this.builder = determineBuilder(builder.getIfAvailable(),
-				deprecatedBuilder.getIfAvailable());
+		this.builder = determineBuilder(builder.getIfAvailable(), deprecatedBuilder.getIfAvailable());
 	}
 
 	@Deprecated
-	private static OkHttpClient.Builder determineBuilder(
-			InfluxDbOkHttpClientBuilderProvider builder,
+	private static OkHttpClient.Builder determineBuilder(InfluxDbOkHttpClientBuilderProvider builder,
 			OkHttpClient.Builder deprecatedBuilder) {
 		if (builder != null) {
 			return builder.get();
 		}
 		else if (deprecatedBuilder != null) {
-			logger.warn(
-					"InfluxDB client customizations using a OkHttpClient.Builder is deprecated, register a "
-							+ InfluxDbOkHttpClientBuilderProvider.class.getSimpleName()
-							+ " bean instead");
+			logger.warn("InfluxDB client customizations using a OkHttpClient.Builder is deprecated, register a "
+					+ InfluxDbOkHttpClientBuilderProvider.class.getSimpleName() + " bean instead");
 			return deprecatedBuilder;
 		}
 		return new OkHttpClient.Builder();
@@ -79,8 +75,8 @@ public class InfluxDbAutoConfiguration {
 	@ConditionalOnMissingBean
 	@ConditionalOnProperty("spring.influx.url")
 	public InfluxDB influxDb() {
-		return new InfluxDBImpl(this.properties.getUrl(), this.properties.getUser(),
-				this.properties.getPassword(), this.builder);
+		return new InfluxDBImpl(this.properties.getUrl(), this.properties.getUser(), this.properties.getPassword(),
+				this.builder);
 	}
 
 }

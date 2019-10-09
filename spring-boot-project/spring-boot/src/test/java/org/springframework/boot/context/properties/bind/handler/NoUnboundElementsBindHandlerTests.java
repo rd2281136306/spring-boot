@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,9 +51,7 @@ public class NoUnboundElementsBindHandlerTests {
 		source.put("example.baz", "bar");
 		this.sources.add(source);
 		this.binder = new Binder(this.sources);
-		Example bound = this.binder
-				.bind(ConfigurationPropertyName.of("example"), Bindable.of(Example.class))
-				.get();
+		Example bound = this.binder.bind(ConfigurationPropertyName.of("example"), Bindable.of(Example.class)).get();
 		assertThat(bound.getFoo()).isEqualTo("bar");
 	}
 
@@ -63,8 +61,8 @@ public class NoUnboundElementsBindHandlerTests {
 		source.put("example.foo", "bar");
 		this.sources.add(source);
 		this.binder = new Binder(this.sources);
-		Example bound = this.binder.bind("example", Bindable.of(Example.class),
-				new NoUnboundElementsBindHandler()).get();
+		Example bound = this.binder.bind("example", Bindable.of(Example.class), new NoUnboundElementsBindHandler())
+				.get();
 		assertThat(bound.getFoo()).isEqualTo("bar");
 	}
 
@@ -75,9 +73,8 @@ public class NoUnboundElementsBindHandlerTests {
 		source.put("example.baz", "bar");
 		this.sources.add(source);
 		this.binder = new Binder(this.sources);
-		assertThatExceptionOfType(BindException.class)
-				.isThrownBy(() -> this.binder.bind("example", Bindable.of(Example.class),
-						new NoUnboundElementsBindHandler()))
+		assertThatExceptionOfType(BindException.class).isThrownBy(
+				() -> this.binder.bind("example", Bindable.of(Example.class), new NoUnboundElementsBindHandler()))
 				.satisfies((ex) -> assertThat(ex.getCause().getMessage())
 						.contains("The elements [example.baz] were left unbound"));
 	}
@@ -89,8 +86,8 @@ public class NoUnboundElementsBindHandlerTests {
 		source.put("other.baz", "bar");
 		this.sources.add(source);
 		this.binder = new Binder(this.sources);
-		Example bound = this.binder.bind("example", Bindable.of(Example.class),
-				new NoUnboundElementsBindHandler()).get();
+		Example bound = this.binder.bind("example", Bindable.of(Example.class), new NoUnboundElementsBindHandler())
+				.get();
 		assertThat(bound.getFoo()).isEqualTo("bar");
 	}
 
@@ -101,11 +98,37 @@ public class NoUnboundElementsBindHandlerTests {
 		source.put("example.other", "baz");
 		this.sources.add(source);
 		this.binder = new Binder(this.sources);
-		NoUnboundElementsBindHandler handler = new NoUnboundElementsBindHandler(
-				BindHandler.DEFAULT, ((configurationPropertySource) -> false));
-		Example bound = this.binder.bind("example", Bindable.of(Example.class), handler)
-				.get();
+		NoUnboundElementsBindHandler handler = new NoUnboundElementsBindHandler(BindHandler.DEFAULT,
+				((configurationPropertySource) -> false));
+		Example bound = this.binder.bind("example", Bindable.of(Example.class), handler).get();
 		assertThat(bound.getFoo()).isEqualTo("bar");
+	}
+
+	@Test
+	public void bindWhenUsingNoUnboundElementsHandlerShouldBindIfUnboundCollectionProperties() {
+		MockConfigurationPropertySource source1 = new MockConfigurationPropertySource();
+		source1.put("example.foo[0]", "bar");
+		MockConfigurationPropertySource source2 = new MockConfigurationPropertySource();
+		source2.put("example.foo[0]", "bar");
+		source2.put("example.foo[1]", "baz");
+		this.sources.add(source1);
+		this.sources.add(source2);
+		this.binder = new Binder(this.sources);
+		NoUnboundElementsBindHandler handler = new NoUnboundElementsBindHandler();
+		ExampleWithList bound = this.binder.bind("example", Bindable.of(ExampleWithList.class), handler).get();
+		assertThat(bound.getFoo()).containsExactly("bar");
+	}
+
+	@Test
+	public void bindWhenUsingNoUnboundElementsHandlerAndUnboundListElementsShouldThrowException() {
+		MockConfigurationPropertySource source = new MockConfigurationPropertySource();
+		source.put("example.foo[0]", "bar");
+		this.sources.add(source);
+		this.binder = new Binder(this.sources);
+		assertThatExceptionOfType(BindException.class).isThrownBy(
+				() -> this.binder.bind("example", Bindable.of(Example.class), new NoUnboundElementsBindHandler()))
+				.satisfies((ex) -> assertThat(ex.getCause().getMessage())
+						.contains("The elements [example.foo[0]] were left unbound"));
 	}
 
 	public static class Example {
@@ -117,6 +140,20 @@ public class NoUnboundElementsBindHandlerTests {
 		}
 
 		public void setFoo(String foo) {
+			this.foo = foo;
+		}
+
+	}
+
+	public static class ExampleWithList {
+
+		private List<String> foo;
+
+		public List<String> getFoo() {
+			return this.foo;
+		}
+
+		public void setFoo(List<String> foo) {
 			this.foo = foo;
 		}
 

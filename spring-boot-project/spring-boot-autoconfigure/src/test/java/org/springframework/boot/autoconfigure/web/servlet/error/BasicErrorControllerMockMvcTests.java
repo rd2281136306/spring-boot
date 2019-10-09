@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -86,20 +86,27 @@ public class BasicErrorControllerMockMvcTests {
 
 	@Test
 	public void testDirectAccessForMachineClient() throws Exception {
-		MvcResult response = this.mockMvc.perform(get("/error"))
-				.andExpect(status().is5xxServerError()).andReturn();
+		MvcResult response = this.mockMvc.perform(get("/error")).andExpect(status().is5xxServerError()).andReturn();
 		String content = response.getResponse().getContentAsString();
 		assertThat(content).contains("999");
 	}
 
 	@Test
-	public void testErrorWithResponseStatus() throws Exception {
-		MvcResult result = this.mockMvc.perform(get("/bang"))
-				.andExpect(status().isNotFound()).andReturn();
-		MvcResult response = this.mockMvc.perform(new ErrorDispatcher(result, "/error"))
-				.andReturn();
+	public void testErrorWithNotFoundResponseStatus() throws Exception {
+		MvcResult result = this.mockMvc.perform(get("/bang")).andExpect(status().isNotFound()).andReturn();
+		MvcResult response = this.mockMvc.perform(new ErrorDispatcher(result, "/error")).andReturn();
 		String content = response.getResponse().getContentAsString();
 		assertThat(content).contains("Expected!");
+	}
+
+	@Test
+	public void testErrorWithNoContentResponseStatus() throws Exception {
+		MvcResult result = this.mockMvc.perform(get("/noContent").accept("some/thing"))
+				.andExpect(status().isNoContent()).andReturn();
+		MvcResult response = this.mockMvc.perform(new ErrorDispatcher(result, "/error"))
+				.andExpect(status().isNoContent()).andReturn();
+		String content = response.getResponse().getContentAsString();
+		assertThat(content).isEmpty();
 	}
 
 	@Test
@@ -107,10 +114,8 @@ public class BasicErrorControllerMockMvcTests {
 		// In a real server the response is carried over into the error dispatcher, but
 		// in the mock a new one is created so we have to assert the status at this
 		// intermediate point
-		MvcResult result = this.mockMvc.perform(get("/bind"))
-				.andExpect(status().is4xxClientError()).andReturn();
-		MvcResult response = this.mockMvc.perform(new ErrorDispatcher(result, "/error"))
-				.andReturn();
+		MvcResult result = this.mockMvc.perform(get("/bind")).andExpect(status().is4xxClientError()).andReturn();
+		MvcResult response = this.mockMvc.perform(new ErrorDispatcher(result, "/error")).andReturn();
 		// And the rendered status code is always wrong (but would be 400 in a real
 		// system)
 		String content = response.getResponse().getContentAsString();
@@ -119,8 +124,7 @@ public class BasicErrorControllerMockMvcTests {
 
 	@Test
 	public void testDirectAccessForBrowserClient() throws Exception {
-		MvcResult response = this.mockMvc
-				.perform(get("/error").accept(MediaType.TEXT_HTML))
+		MvcResult response = this.mockMvc.perform(get("/error").accept(MediaType.TEXT_HTML))
 				.andExpect(status().is5xxServerError()).andReturn();
 		String content = response.getResponse().getContentAsString();
 		assertThat(content).contains("ERROR_BEAN");
@@ -129,10 +133,9 @@ public class BasicErrorControllerMockMvcTests {
 	@Target(ElementType.TYPE)
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
-	@ImportAutoConfiguration({ ServletWebServerFactoryAutoConfiguration.class,
-			DispatcherServletAutoConfiguration.class, WebMvcAutoConfiguration.class,
-			HttpMessageConvertersAutoConfiguration.class, ErrorMvcAutoConfiguration.class,
-			PropertyPlaceholderAutoConfiguration.class })
+	@ImportAutoConfiguration({ ServletWebServerFactoryAutoConfiguration.class, DispatcherServletAutoConfiguration.class,
+			WebMvcAutoConfiguration.class, HttpMessageConvertersAutoConfiguration.class,
+			ErrorMvcAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
 	private @interface MinimalWebConfiguration {
 
 	}
@@ -150,9 +153,8 @@ public class BasicErrorControllerMockMvcTests {
 		public View error() {
 			return new AbstractView() {
 				@Override
-				protected void renderMergedOutputModel(Map<String, Object> model,
-						HttpServletRequest request, HttpServletResponse response)
-						throws Exception {
+				protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request,
+						HttpServletResponse response) throws Exception {
 					response.getWriter().write("ERROR_BEAN");
 				}
 			};
@@ -182,6 +184,11 @@ public class BasicErrorControllerMockMvcTests {
 				throw error;
 			}
 
+			@RequestMapping("/noContent")
+			public void noContent() throws Exception {
+				throw new NoContentException("Expected!");
+			}
+
 		}
 
 	}
@@ -190,6 +197,15 @@ public class BasicErrorControllerMockMvcTests {
 	private static class NotFoundException extends RuntimeException {
 
 		NotFoundException(String string) {
+			super(string);
+		}
+
+	}
+
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	private static class NoContentException extends RuntimeException {
+
+		NoContentException(String string) {
 			super(string);
 		}
 
@@ -211,6 +227,7 @@ public class BasicErrorControllerMockMvcTests {
 			MockHttpServletRequest request = this.result.getRequest();
 			request.setDispatcherType(DispatcherType.ERROR);
 			request.setRequestURI(this.path);
+			request.setAttribute("javax.servlet.error.status_code", this.result.getResponse().getStatus());
 			return request;
 		}
 

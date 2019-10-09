@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,13 +32,11 @@ public class ObjectContentTests {
 
 	private static final ExampleObject OBJECT = new ExampleObject();
 
-	private static final ResolvableType TYPE = ResolvableType
-			.forClass(ExampleObject.class);
+	private static final ResolvableType TYPE = ResolvableType.forClass(ExampleObject.class);
 
 	@Test
 	public void createWhenObjectIsNullShouldThrowException() {
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> new ObjectContent<ExampleObject>(TYPE, null))
+		assertThatIllegalArgumentException().isThrownBy(() -> new ObjectContent<ExampleObject>(TYPE, null))
 				.withMessageContaining("Object must not be null");
 	}
 
@@ -63,8 +61,7 @@ public class ObjectContentTests {
 	@Test
 	public void toStringWhenHasTypeShouldReturnString() {
 		ObjectContent<ExampleObject> content = new ObjectContent<>(TYPE, OBJECT);
-		assertThat(content.toString())
-				.isEqualTo("ObjectContent " + OBJECT + " created from " + TYPE);
+		assertThat(content.toString()).isEqualTo("ObjectContent " + OBJECT + " created from " + TYPE);
 	}
 
 	@Test

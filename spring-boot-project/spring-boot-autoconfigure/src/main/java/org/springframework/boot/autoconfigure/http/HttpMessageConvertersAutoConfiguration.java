@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,13 +46,12 @@ import org.springframework.http.converter.StringHttpMessageConverter;
  * @author Sebastien Deleuze
  * @author Stephane Nicoll
  * @author Eddú Meléndez
+ * @since 2.0.0
  */
 @Configuration
 @ConditionalOnClass(HttpMessageConverter.class)
-@AutoConfigureAfter({ GsonAutoConfiguration.class, JacksonAutoConfiguration.class,
-		JsonbAutoConfiguration.class })
-@Import({ JacksonHttpMessageConvertersConfiguration.class,
-		GsonHttpMessageConvertersConfiguration.class,
+@AutoConfigureAfter({ GsonAutoConfiguration.class, JacksonAutoConfiguration.class, JsonbAutoConfiguration.class })
+@Import({ JacksonHttpMessageConvertersConfiguration.class, GsonHttpMessageConvertersConfiguration.class,
 		JsonbHttpMessageConvertersConfiguration.class })
 public class HttpMessageConvertersAutoConfiguration {
 
@@ -60,8 +59,7 @@ public class HttpMessageConvertersAutoConfiguration {
 
 	private final List<HttpMessageConverter<?>> converters;
 
-	public HttpMessageConvertersAutoConfiguration(
-			ObjectProvider<HttpMessageConverter<?>> convertersProvider) {
+	public HttpMessageConvertersAutoConfiguration(ObjectProvider<HttpMessageConverter<?>> convertersProvider) {
 		this.converters = convertersProvider.orderedStream().collect(Collectors.toList());
 	}
 
@@ -85,8 +83,7 @@ public class HttpMessageConvertersAutoConfiguration {
 		@Bean
 		@ConditionalOnMissingBean
 		public StringHttpMessageConverter stringHttpMessageConverter() {
-			StringHttpMessageConverter converter = new StringHttpMessageConverter(
-					this.properties.getCharset());
+			StringHttpMessageConverter converter = new StringHttpMessageConverter(this.properties.getCharset());
 			converter.setWriteAcceptCharset(false);
 			return converter;
 		}

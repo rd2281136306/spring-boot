@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,9 +15,6 @@
  */
 
 package org.springframework.boot.actuate.autoconfigure.web.server;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
@@ -29,7 +26,7 @@ import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoCon
 import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.context.ConfigurableWebServerApplicationContext;
-import org.springframework.boot.web.context.WebServerApplicationContext;
+import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
@@ -55,17 +52,12 @@ import org.springframework.util.Assert;
  */
 @Configuration
 @AutoConfigureOrder(Ordered.LOWEST_PRECEDENCE)
-@EnableConfigurationProperties({ WebEndpointProperties.class,
-		ManagementServerProperties.class })
+@EnableConfigurationProperties({ WebEndpointProperties.class, ManagementServerProperties.class })
 public class ManagementContextAutoConfiguration {
-
-	private static final Log logger = LogFactory
-			.getLog(ManagementContextAutoConfiguration.class);
 
 	@Configuration
 	@ConditionalOnManagementPort(ManagementPortType.SAME)
-	static class SameManagementContextConfiguration
-			implements SmartInitializingSingleton {
+	static class SameManagementContextConfiguration implements SmartInitializingSingleton {
 
 		private final Environment environment;
 
@@ -77,17 +69,14 @@ public class ManagementContextAutoConfiguration {
 		public void afterSingletonsInstantiated() {
 			verifySslConfiguration();
 			if (this.environment instanceof ConfigurableEnvironment) {
-				addLocalManagementPortPropertyAlias(
-						(ConfigurableEnvironment) this.environment);
+				addLocalManagementPortPropertyAlias((ConfigurableEnvironment) this.environment);
 			}
 		}
 
 		private void verifySslConfiguration() {
-			Boolean enabled = this.environment
-					.getProperty("management.server.ssl.enabled", Boolean.class, false);
-			Assert.state(!enabled,
-					"Management-specific SSL cannot be configured as the management "
-							+ "server is not listening on a separate port");
+			Boolean enabled = this.environment.getProperty("management.server.ssl.enabled", Boolean.class, false);
+			Assert.state(!enabled, "Management-specific SSL cannot be configured as the management "
+					+ "server is not listening on a separate port");
 		}
 
 		/**
@@ -95,20 +84,18 @@ public class ManagementContextAutoConfiguration {
 		 * 'local.server.port'.
 		 * @param environment the environment
 		 */
-		private void addLocalManagementPortPropertyAlias(
-				ConfigurableEnvironment environment) {
-			environment.getPropertySources()
-					.addLast(new PropertySource<Object>("Management Server") {
+		private void addLocalManagementPortPropertyAlias(ConfigurableEnvironment environment) {
+			environment.getPropertySources().addLast(new PropertySource<Object>("Management Server") {
 
-						@Override
-						public Object getProperty(String name) {
-							if ("local.management.port".equals(name)) {
-								return environment.getProperty("local.server.port");
-							}
-							return null;
-						}
+				@Override
+				public Object getProperty(String name) {
+					if ("local.management.port".equals(name)) {
+						return environment.getProperty("local.server.port");
+					}
+					return null;
+				}
 
-					});
+			});
 		}
 
 		@Configuration
@@ -121,8 +108,7 @@ public class ManagementContextAutoConfiguration {
 
 	@Configuration
 	@ConditionalOnManagementPort(ManagementPortType.DIFFERENT)
-	static class DifferentManagementContextConfiguration
-			implements SmartInitializingSingleton {
+	static class DifferentManagementContextConfiguration implements ApplicationListener<WebServerInitializedEvent> {
 
 		private final ApplicationContext applicationContext;
 
@@ -135,10 +121,8 @@ public class ManagementContextAutoConfiguration {
 		}
 
 		@Override
-		public void afterSingletonsInstantiated() {
-			if (this.applicationContext instanceof WebServerApplicationContext
-					&& ((WebServerApplicationContext) this.applicationContext)
-							.getWebServer() != null) {
+		public void onApplicationEvent(WebServerInitializedEvent event) {
+			if (event.getApplicationContext().equals(this.applicationContext)) {
 				ConfigurableWebServerApplicationContext managementContext = this.managementContextFactory
 						.createManagementContext(this.applicationContext,
 								EnableChildManagementContextConfiguration.class,
@@ -146,21 +130,14 @@ public class ManagementContextAutoConfiguration {
 				managementContext.setServerNamespace("management");
 				managementContext.setId(this.applicationContext.getId() + ":management");
 				setClassLoaderIfPossible(managementContext);
-				CloseManagementContextListener.addIfPossible(this.applicationContext,
-						managementContext);
+				CloseManagementContextListener.addIfPossible(this.applicationContext, managementContext);
 				managementContext.refresh();
-			}
-			else {
-				logger.warn("Could not start embedded management container on "
-						+ "different port (management endpoints are still available "
-						+ "through JMX)");
 			}
 		}
 
 		private void setClassLoaderIfPossible(ConfigurableApplicationContext child) {
 			if (child instanceof DefaultResourceLoader) {
-				((DefaultResourceLoader) child)
-						.setClassLoader(this.applicationContext.getClassLoader());
+				((DefaultResourceLoader) child).setClassLoader(this.applicationContext.getClassLoader());
 			}
 		}
 
@@ -170,15 +147,13 @@ public class ManagementContextAutoConfiguration {
 	 * {@link ApplicationListener} to propagate the {@link ContextClosedEvent} and
 	 * {@link ApplicationFailedEvent} from a parent to a child.
 	 */
-	private static class CloseManagementContextListener
-			implements ApplicationListener<ApplicationEvent> {
+	private static class CloseManagementContextListener implements ApplicationListener<ApplicationEvent> {
 
 		private final ApplicationContext parentContext;
 
 		private final ConfigurableApplicationContext childContext;
 
-		CloseManagementContextListener(ApplicationContext parentContext,
-				ConfigurableApplicationContext childContext) {
+		CloseManagementContextListener(ApplicationContext parentContext, ConfigurableApplicationContext childContext) {
 			this.parentContext = parentContext;
 			this.childContext = childContext;
 		}
@@ -216,8 +191,7 @@ public class ManagementContextAutoConfiguration {
 
 		private static void add(ConfigurableApplicationContext parentContext,
 				ConfigurableApplicationContext childContext) {
-			parentContext.addApplicationListener(
-					new CloseManagementContextListener(parentContext, childContext));
+			parentContext.addApplicationListener(new CloseManagementContextListener(parentContext, childContext));
 		}
 
 	}

@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,12 +42,9 @@ public class CassandraReactiveHealthIndicatorTests {
 	@Test
 	public void testCassandraIsUp() {
 		ReactiveCqlOperations reactiveCqlOperations = mock(ReactiveCqlOperations.class);
-		given(reactiveCqlOperations.queryForObject(any(Select.class), eq(String.class)))
-				.willReturn(Mono.just("6.0.0"));
-		ReactiveCassandraOperations reactiveCassandraOperations = mock(
-				ReactiveCassandraOperations.class);
-		given(reactiveCassandraOperations.getReactiveCqlOperations())
-				.willReturn(reactiveCqlOperations);
+		given(reactiveCqlOperations.queryForObject(any(Select.class), eq(String.class))).willReturn(Mono.just("6.0.0"));
+		ReactiveCassandraOperations reactiveCassandraOperations = mock(ReactiveCassandraOperations.class);
+		given(reactiveCassandraOperations.getReactiveCqlOperations()).willReturn(reactiveCqlOperations);
 
 		CassandraReactiveHealthIndicator cassandraReactiveHealthIndicator = new CassandraReactiveHealthIndicator(
 				reactiveCassandraOperations);
@@ -61,8 +58,7 @@ public class CassandraReactiveHealthIndicatorTests {
 
 	@Test
 	public void testCassandraIsDown() {
-		ReactiveCassandraOperations reactiveCassandraOperations = mock(
-				ReactiveCassandraOperations.class);
+		ReactiveCassandraOperations reactiveCassandraOperations = mock(ReactiveCassandraOperations.class);
 		given(reactiveCassandraOperations.getReactiveCqlOperations())
 				.willThrow(new CassandraInternalException("Connection failed"));
 
@@ -72,8 +68,8 @@ public class CassandraReactiveHealthIndicatorTests {
 		StepVerifier.create(health).consumeNextWith((h) -> {
 			assertThat(h.getStatus()).isEqualTo(Status.DOWN);
 			assertThat(h.getDetails()).containsOnlyKeys("error");
-			assertThat(h.getDetails().get("error")).isEqualTo(
-					CassandraInternalException.class.getName() + ": Connection failed");
+			assertThat(h.getDetails().get("error"))
+					.isEqualTo(CassandraInternalException.class.getName() + ": Connection failed");
 		}).verifyComplete();
 	}
 

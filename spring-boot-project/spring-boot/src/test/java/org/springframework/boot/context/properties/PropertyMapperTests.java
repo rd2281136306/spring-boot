@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
  * Tests for {@link PropertyMapper}.
  *
  * @author Phillip Webb
+ * @author Artsiom Yudovin
  */
 public class PropertyMapperTests {
 
@@ -49,8 +50,7 @@ public class PropertyMapperTests {
 
 	@Test
 	public void fromValueAsIntShouldAdaptValue() {
-		Integer result = this.map.from("123").asInt(Long::valueOf)
-				.toInstance(Integer::new);
+		Integer result = this.map.from("123").asInt(Long::valueOf).toInstance(Integer::new);
 		assertThat(result).isEqualTo(123);
 	}
 
@@ -61,15 +61,13 @@ public class PropertyMapperTests {
 
 	@Test
 	public void fromWhenSupplierIsNullShouldThrowException() {
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> this.map.from((Supplier<?>) null))
+		assertThatIllegalArgumentException().isThrownBy(() -> this.map.from((Supplier<?>) null))
 				.withMessageContaining("Supplier must not be null");
 	}
 
 	@Test
 	public void toWhenConsumerIsNullShouldThrowException() {
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> this.map.from(() -> "").to(null))
+		assertThatIllegalArgumentException().isThrownBy(() -> this.map.from(() -> "").to(null))
 				.withMessageContaining("Consumer must not be null");
 	}
 
@@ -83,15 +81,13 @@ public class PropertyMapperTests {
 
 	@Test
 	public void asIntShouldAdaptSupplier() {
-		Integer result = this.map.from(() -> "123").asInt(Long::valueOf)
-				.toInstance(Integer::new);
+		Integer result = this.map.from(() -> "123").asInt(Long::valueOf).toInstance(Integer::new);
 		assertThat(result).isEqualTo(123);
 	}
 
 	@Test
 	public void asWhenAdapterIsNullShouldThrowException() {
-		assertThatIllegalArgumentException()
-				.isThrownBy(() -> this.map.from(() -> "").as(null))
+		assertThatIllegalArgumentException().isThrownBy(() -> this.map.from(() -> "").as(null))
 				.withMessageContaining("Adapter must not be null");
 	}
 
@@ -165,8 +161,7 @@ public class PropertyMapperTests {
 
 	@Test
 	public void whenInstanceOfWhenValueIsTargetTypeShouldMatch() {
-		Long result = this.map.from(123L).whenInstanceOf(Long.class)
-				.toInstance((value) -> value + 1);
+		Long result = this.map.from(123L).whenInstanceOf(Long.class).toInstance((value) -> value + 1);
 		assertThat(result).isEqualTo(124L);
 	}
 
@@ -190,10 +185,21 @@ public class PropertyMapperTests {
 	@Test
 	public void whenWhenCombinedWithAsUsesSourceValue() {
 		Count<String> source = new Count<>(() -> "123");
-		Long result = this.map.from(source).when("123"::equals).as(Integer::valueOf)
-				.when((v) -> v == 123).as(Integer::longValue).toInstance(Long::new);
+		Long result = this.map.from(source).when("123"::equals).as(Integer::valueOf).when((v) -> v == 123)
+				.as(Integer::longValue).toInstance(Long::new);
 		assertThat(result).isEqualTo(123);
 		assertThat(source.getCount()).isOne();
+	}
+
+	@Test
+	public void whenWhenValueNotMatchesShouldSupportChainedCalls() {
+		this.map.from("123").when("456"::equals).when("123"::equals).toCall(Assert::fail);
+	}
+
+	@Test
+	public void whenWhenValueMatchesShouldSupportChainedCalls() {
+		String result = this.map.from("123").when((s) -> s.contains("2")).when("123"::equals).toInstance(String::new);
+		assertThat(result).isEqualTo("123");
 	}
 
 	@Test

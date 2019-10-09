@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2017 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * @author Phillip Webb
  * @author Madhura Bhave
+ * @author Diego Berrueta
  */
 public class JacksonTesterIntegrationTests {
 
@@ -46,6 +47,8 @@ public class JacksonTesterIntegrationTests {
 	private JacksonTester<List<ExampleObject>> listJson;
 
 	private JacksonTester<Map<String, Integer>> mapJson;
+
+	private JacksonTester<String> stringJson;
 
 	private ObjectMapper objectMapper;
 
@@ -60,16 +63,14 @@ public class JacksonTesterIntegrationTests {
 	@Test
 	public void typicalTest() throws Exception {
 		String example = JSON;
-		assertThat(this.simpleJson.parse(example).getObject().getName())
-				.isEqualTo("Spring");
+		assertThat(this.simpleJson.parse(example).getObject().getName()).isEqualTo("Spring");
 	}
 
 	@Test
 	public void typicalListTest() throws Exception {
 		String example = "[" + JSON + "]";
 		assertThat(this.listJson.parse(example)).asList().hasSize(1);
-		assertThat(this.listJson.parse(example).getObject().get(0).getName())
-				.isEqualTo("Spring");
+		assertThat(this.listJson.parse(example).getObject().get(0).getName()).isEqualTo("Spring");
 	}
 
 	@Test
@@ -77,8 +78,27 @@ public class JacksonTesterIntegrationTests {
 		Map<String, Integer> map = new LinkedHashMap<>();
 		map.put("a", 1);
 		map.put("b", 2);
-		assertThat(this.mapJson.write(map)).extractingJsonPathNumberValue("@.a")
-				.isEqualTo(1);
+		assertThat(this.mapJson.write(map)).extractingJsonPathNumberValue("@.a").isEqualTo(1);
+	}
+
+	@Test
+	public void stringLiteral() throws Exception {
+		String stringWithSpecialCharacters = "myString";
+		assertThat(this.stringJson.write(stringWithSpecialCharacters)).extractingJsonPathStringValue("@")
+				.isEqualTo(stringWithSpecialCharacters);
+	}
+
+	@Test
+	public void parseSpecialCharactersTest() throws Exception {
+		// Confirms that the handling of special characters is symmetrical between
+		// the serialization (via the JacksonTester) and the parsing (via json-path). By
+		// default json-path uses SimpleJson as its parser, which has a slightly different
+		// behavior to Jackson and breaks the symmetry. JacksonTester
+		// configures json-path to use Jackson for evaluating the path expressions and
+		// restores the symmetry. See gh-15727
+		String stringWithSpecialCharacters = "\u0006\u007F";
+		assertThat(this.stringJson.write(stringWithSpecialCharacters)).extractingJsonPathStringValue("@")
+				.isEqualTo(stringWithSpecialCharacters);
 	}
 
 	@Test
@@ -87,8 +107,8 @@ public class JacksonTesterIntegrationTests {
 		ExampleObjectWithView object = new ExampleObjectWithView();
 		object.setName("Spring");
 		object.setAge(123);
-		JsonContent<ExampleObjectWithView> content = this.jsonWithView
-				.forView(ExampleObjectWithView.TestView.class).write(object);
+		JsonContent<ExampleObjectWithView> content = this.jsonWithView.forView(ExampleObjectWithView.TestView.class)
+				.write(object);
 		assertThat(content).extractingJsonPathStringValue("@.name").isEqualTo("Spring");
 		assertThat(content).doesNotHaveJsonPathValue("age");
 	}
@@ -97,8 +117,8 @@ public class JacksonTesterIntegrationTests {
 	public void readWithResourceAndView() throws Exception {
 		this.objectMapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
 		ByteArrayResource resource = new ByteArrayResource(JSON.getBytes());
-		ObjectContent<ExampleObjectWithView> content = this.jsonWithView
-				.forView(ExampleObjectWithView.TestView.class).read(resource);
+		ObjectContent<ExampleObjectWithView> content = this.jsonWithView.forView(ExampleObjectWithView.TestView.class)
+				.read(resource);
 		assertThat(content.getObject().getName()).isEqualTo("Spring");
 		assertThat(content.getObject().getAge()).isEqualTo(0);
 	}
@@ -107,8 +127,8 @@ public class JacksonTesterIntegrationTests {
 	public void readWithReaderAndView() throws Exception {
 		this.objectMapper.disable(MapperFeature.DEFAULT_VIEW_INCLUSION);
 		Reader reader = new StringReader(JSON);
-		ObjectContent<ExampleObjectWithView> content = this.jsonWithView
-				.forView(ExampleObjectWithView.TestView.class).read(reader);
+		ObjectContent<ExampleObjectWithView> content = this.jsonWithView.forView(ExampleObjectWithView.TestView.class)
+				.read(reader);
 		assertThat(content.getObject().getName()).isEqualTo("Spring");
 		assertThat(content.getObject().getAge()).isEqualTo(0);
 	}

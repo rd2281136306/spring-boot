@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,6 +22,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2Res
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoders;
@@ -31,14 +32,14 @@ import org.springframework.security.oauth2.jwt.ReactiveJwtDecoders;
  *
  * @author Madhura Bhave
  * @author Artsiom Yudovin
+ * @author HaiTao Zhang
  */
 @Configuration
 class ReactiveOAuth2ResourceServerJwkConfiguration {
 
 	private final OAuth2ResourceServerProperties properties;
 
-	ReactiveOAuth2ResourceServerJwkConfiguration(
-			OAuth2ResourceServerProperties properties) {
+	ReactiveOAuth2ResourceServerJwkConfiguration(OAuth2ResourceServerProperties properties) {
 		this.properties = properties;
 	}
 
@@ -46,15 +47,20 @@ class ReactiveOAuth2ResourceServerJwkConfiguration {
 	@ConditionalOnProperty(name = "spring.security.oauth2.resourceserver.jwt.jwk-set-uri")
 	@ConditionalOnMissingBean
 	public ReactiveJwtDecoder jwtDecoder() {
-		return new NimbusReactiveJwtDecoder(this.properties.getJwt().getJwkSetUri());
+		NimbusReactiveJwtDecoder nimbusReactiveJwtDecoder = new NimbusReactiveJwtDecoder(
+				this.properties.getJwt().getJwkSetUri());
+		String issuerUri = this.properties.getJwt().getIssuerUri();
+		if (issuerUri != null) {
+			nimbusReactiveJwtDecoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuerUri));
+		}
+		return nimbusReactiveJwtDecoder;
 	}
 
 	@Bean
 	@Conditional(IssuerUriCondition.class)
 	@ConditionalOnMissingBean
 	public ReactiveJwtDecoder jwtDecoderByIssuerUri() {
-		return ReactiveJwtDecoders
-				.fromOidcIssuerLocation(this.properties.getJwt().getIssuerUri());
+		return ReactiveJwtDecoders.fromOidcIssuerLocation(this.properties.getJwt().getIssuerUri());
 	}
 
 }

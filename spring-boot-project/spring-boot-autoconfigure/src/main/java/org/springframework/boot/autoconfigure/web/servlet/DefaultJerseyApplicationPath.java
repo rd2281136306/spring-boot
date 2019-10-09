@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
  * {@link JerseyProperties} or the {@code @ApplicationPath} annotation.
  *
  * @author Madhura Bhave
+ * @since 2.1.0
  */
 public class DefaultJerseyApplicationPath implements JerseyApplicationPath {
 
@@ -49,8 +50,8 @@ public class DefaultJerseyApplicationPath implements JerseyApplicationPath {
 		if (StringUtils.hasLength(this.applicationPath)) {
 			return this.applicationPath;
 		}
-		return findApplicationPath(AnnotationUtils.findAnnotation(
-				this.config.getApplication().getClass(), ApplicationPath.class));
+		return findApplicationPath(
+				AnnotationUtils.findAnnotation(this.config.getApplication().getClass(), ApplicationPath.class));
 	}
 
 	private static String findApplicationPath(ApplicationPath annotation) {

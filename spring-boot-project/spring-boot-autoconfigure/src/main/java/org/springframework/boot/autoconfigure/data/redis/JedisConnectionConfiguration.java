@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -72,15 +72,13 @@ class JedisConnectionConfiguration extends RedisConnectionConfiguration {
 			return new JedisConnectionFactory(getSentinelConfig(), clientConfiguration);
 		}
 		if (getClusterConfiguration() != null) {
-			return new JedisConnectionFactory(getClusterConfiguration(),
-					clientConfiguration);
+			return new JedisConnectionFactory(getClusterConfiguration(), clientConfiguration);
 		}
 		return new JedisConnectionFactory(getStandaloneConfig(), clientConfiguration);
 	}
 
 	private JedisClientConfiguration getJedisClientConfiguration() {
-		JedisClientConfigurationBuilder builder = applyProperties(
-				JedisClientConfiguration.builder());
+		JedisClientConfigurationBuilder builder = applyProperties(JedisClientConfiguration.builder());
 		RedisProperties.Pool pool = this.properties.getJedis().getPool();
 		if (pool != null) {
 			applyPooling(pool, builder);
@@ -92,8 +90,7 @@ class JedisConnectionConfiguration extends RedisConnectionConfiguration {
 		return builder.build();
 	}
 
-	private JedisClientConfigurationBuilder applyProperties(
-			JedisClientConfigurationBuilder builder) {
+	private JedisClientConfigurationBuilder applyProperties(JedisClientConfigurationBuilder builder) {
 		if (this.properties.isSsl()) {
 			builder.useSsl();
 		}
@@ -114,24 +111,24 @@ class JedisConnectionConfiguration extends RedisConnectionConfiguration {
 		config.setMaxTotal(pool.getMaxActive());
 		config.setMaxIdle(pool.getMaxIdle());
 		config.setMinIdle(pool.getMinIdle());
+		if (pool.getTimeBetweenEvictionRuns() != null) {
+			config.setTimeBetweenEvictionRunsMillis(pool.getTimeBetweenEvictionRuns().toMillis());
+		}
 		if (pool.getMaxWait() != null) {
 			config.setMaxWaitMillis(pool.getMaxWait().toMillis());
 		}
 		return config;
 	}
 
-	private void customizeConfigurationFromUrl(
-			JedisClientConfiguration.JedisClientConfigurationBuilder builder) {
+	private void customizeConfigurationFromUrl(JedisClientConfiguration.JedisClientConfigurationBuilder builder) {
 		ConnectionInfo connectionInfo = parseUrl(this.properties.getUrl());
 		if (connectionInfo.isUseSsl()) {
 			builder.useSsl();
 		}
 	}
 
-	private void customize(
-			JedisClientConfiguration.JedisClientConfigurationBuilder builder) {
-		this.builderCustomizers.orderedStream()
-				.forEach((customizer) -> customizer.customize(builder));
+	private void customize(JedisClientConfiguration.JedisClientConfigurationBuilder builder) {
+		this.builderCustomizers.orderedStream().forEach((customizer) -> customizer.customize(builder));
 	}
 
 }

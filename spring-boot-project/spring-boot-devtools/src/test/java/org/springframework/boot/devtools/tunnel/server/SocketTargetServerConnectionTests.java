@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -75,8 +75,7 @@ public class SocketTargetServerConnectionTests {
 		this.server.start();
 		ByteChannel channel = this.connection.open(10);
 		long startTime = System.currentTimeMillis();
-		assertThatExceptionOfType(SocketTimeoutException.class)
-				.isThrownBy(() -> channel.read(ByteBuffer.allocate(5)))
+		assertThatExceptionOfType(SocketTimeoutException.class).isThrownBy(() -> channel.read(ByteBuffer.allocate(5)))
 				.satisfies((ex) -> {
 					long runTime = System.currentTimeMillis() - startTime;
 					assertThat(runTime).isGreaterThanOrEqualTo(10L);
@@ -149,8 +148,7 @@ public class SocketTargetServerConnectionTests {
 						}
 					}
 					if (MockServer.this.expect != null) {
-						ByteBuffer buffer = ByteBuffer
-								.allocate(MockServer.this.expect.length);
+						ByteBuffer buffer = ByteBuffer.allocate(MockServer.this.expect.length);
 						while (buffer.hasRemaining()) {
 							channel.read(buffer);
 						}

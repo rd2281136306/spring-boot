@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,6 +18,7 @@ package org.springframework.boot.context.properties.source;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,12 +45,9 @@ import org.springframework.util.ObjectUtils;
 class SpringIterableConfigurationPropertySource extends SpringConfigurationPropertySource
 		implements IterableConfigurationPropertySource {
 
-	private volatile Object cacheKey;
-
 	private volatile Cache cache;
 
-	SpringIterableConfigurationPropertySource(EnumerablePropertySource<?> propertySource,
-			PropertyMapper mapper) {
+	SpringIterableConfigurationPropertySource(EnumerablePropertySource<?> propertySource, PropertyMapper mapper) {
 		super(propertySource, mapper, null);
 		assertEnumerablePropertySource();
 	}
@@ -60,17 +58,14 @@ class SpringIterableConfigurationPropertySource extends SpringConfigurationPrope
 				((MapPropertySource) getPropertySource()).getSource().size();
 			}
 			catch (UnsupportedOperationException ex) {
-				throw new IllegalArgumentException(
-						"PropertySource must be fully enumerable");
+				throw new IllegalArgumentException("PropertySource must be fully enumerable");
 			}
 		}
 	}
 
 	@Override
-	public ConfigurationProperty getConfigurationProperty(
-			ConfigurationPropertyName name) {
-		ConfigurationProperty configurationProperty = super.getConfigurationProperty(
-				name);
+	public ConfigurationProperty getConfigurationProperty(ConfigurationPropertyName name) {
+		ConfigurationProperty configurationProperty = super.getConfigurationProperty(name);
 		if (configurationProperty == null) {
 			configurationProperty = find(getPropertyMappings(getCache()), name);
 		}
@@ -88,8 +83,7 @@ class SpringIterableConfigurationPropertySource extends SpringConfigurationPrope
 	}
 
 	@Override
-	public ConfigurationPropertyState containsDescendantOf(
-			ConfigurationPropertyName name) {
+	public ConfigurationPropertyState containsDescendantOf(ConfigurationPropertyName name) {
 		return ConfigurationPropertyState.search(this, name::isAncestorOf);
 	}
 
@@ -131,16 +125,23 @@ class SpringIterableConfigurationPropertySource extends SpringConfigurationPrope
 	}
 
 	private Cache getCache() {
-		CacheKey cacheKey = CacheKey.get(getPropertySource());
-		if (cacheKey == null) {
+		CacheKey key = CacheKey.get(getPropertySource());
+		if (key == null) {
 			return null;
 		}
-		if (ObjectUtils.nullSafeEquals(cacheKey, this.cacheKey)) {
-			return this.cache;
+		Cache cache = this.cache;
+		try {
+			if (cache != null && cache.hasKeyEqualTo(key)) {
+				return cache;
+			}
+			cache = new Cache(key.copy());
+			this.cache = cache;
+			return cache;
 		}
-		this.cache = new Cache();
-		this.cacheKey = cacheKey.copy();
-		return this.cache;
+		catch (ConcurrentModificationException ex) {
+			// Not fatal at this point, we can continue without a cache
+			return null;
+		}
 	}
 
 	@Override
@@ -150,9 +151,19 @@ class SpringIterableConfigurationPropertySource extends SpringConfigurationPrope
 
 	private static class Cache {
 
+		private final CacheKey key;
+
 		private List<ConfigurationPropertyName> names;
 
 		private PropertyMapping[] mappings;
+
+		Cache(CacheKey key) {
+			this.key = key;
+		}
+
+		public boolean hasKeyEqualTo(CacheKey key) {
+			return this.key.equals(key);
+		}
 
 		public List<ConfigurationPropertyName> getNames() {
 			return this.names;

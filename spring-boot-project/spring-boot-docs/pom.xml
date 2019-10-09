@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -14,6 +14,11 @@
 	<properties>
 		<main.basedir>${basedir}/../..</main.basedir>
 	</properties>
+	<scm>
+		<url>${git.url}</url>
+		<connection>${git.connection}</connection>
+		<developerConnection>${git.developerConnection}</developerConnection>
+	</scm>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -164,11 +169,6 @@
 		<dependency>
 			<groupId>com.sendgrid</groupId>
 			<artifactId>sendgrid-java</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.timgroup</groupId>
-			<artifactId>java-statsd-client</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -435,6 +435,11 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -824,6 +829,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-commons</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-couchbase</artifactId>
 			<optional>true</optional>
 		</dependency>
@@ -1163,29 +1173,55 @@
 						<version>1.0.1</version>
 						<executions>
 							<execution>
+								<id>transform-effective-pom</id>
 								<goals>
 									<goal>transform</goal>
 								</goals>
+								<configuration>
+									<transformationSets>
+										<transformationSet>
+											<dir>${project.build.directory}/external-resources</dir>
+											<includes>
+												<include>effective-pom.xml</include>
+											</includes>
+											<stylesheet>src/main/xslt/dependencyVersions.xsl</stylesheet>
+											<fileMappers>
+												<fileMapper
+													implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+													<targetExtension>.adoc</targetExtension>
+												</fileMapper>
+											</fileMappers>
+											<outputDir>${project.build.directory}/generated-resources</outputDir>
+										</transformationSet>
+									</transformationSets>
+								</configuration>
+							</execution>
+							<execution>
+								<id>transform-flattened-pom</id>
+								<phase>process-resources</phase>
+								<goals>
+									<goal>transform</goal>
+								</goals>
+								<configuration>
+									<transformationSets>
+										<transformationSet>
+											<dir>${project.basedir}</dir>
+											<includes>
+												<include>.flattened-pom.xml</include>
+											</includes>
+											<stylesheet>src/main/xslt/versionProperties.xsl</stylesheet>
+											<fileMappers>
+												<fileMapper
+													implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+													<targetExtension>.properties</targetExtension>
+												</fileMapper>
+											</fileMappers>
+											<outputDir>${project.build.directory}/generated-resources</outputDir>
+										</transformationSet>
+									</transformationSets>
+								</configuration>
 							</execution>
 						</executions>
-						<configuration>
-							<transformationSets>
-								<transformationSet>
-									<dir>${project.build.directory}/external-resources</dir>
-									<includes>
-										<include>effective-pom.xml</include>
-									</includes>
-									<stylesheet>src/main/xslt/dependencyVersions.xsl</stylesheet>
-									<fileMappers>
-										<fileMapper
-											implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
-											<targetExtension>.adoc</targetExtension>
-										</fileMapper>
-									</fileMappers>
-									<outputDir>${project.build.directory}/generated-resources</outputDir>
-								</transformationSet>
-							</transformationSets>
-						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.codehaus.gmavenplus</groupId>
@@ -1224,6 +1260,26 @@
 						</dependencies>
 					</plugin>
 					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>properties-maven-plugin</artifactId>
+						<version>1.0.0</version>
+						<executions>
+							<execution>
+								<id>read-flattenedpom-versions</id>
+								<phase>prepare-package</phase>
+								<goals>
+									<goal>read-project-properties</goal>
+								</goals>
+								<inherited>false</inherited>
+								<configuration>
+									<files>
+										<file>${project.build.directory}/generated-resources/.flattened-pom.properties</file>
+									</files>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
 						<groupId>org.asciidoctor</groupId>
 						<artifactId>asciidoctor-maven-plugin</artifactId>
 						<executions>
@@ -1239,15 +1295,24 @@
 									<doctype>book</doctype>
 									<attributes>
 										<docinfo>true</docinfo>
-										<jooq-version>${jooq.version}</jooq-version>
-										<spring-framework-version>${spring-framework.version}</spring-framework-version>
-										<spring-boot-version>${revision}</spring-boot-version>
-										<spring-boot-docs-version>${revision}</spring-boot-docs-version>
-										<spring-boot-repo>${spring-boot-repo}</spring-boot-repo>
-										<spring-docs-version>${spring-framework.version}</spring-docs-version>
-										<spring-security-docs-version>${spring-security.version}</spring-security-docs-version>
-										<spring-webservices-docs-version>${spring-ws.version}</spring-webservices-docs-version>
+										<attribute-missing>warn</attribute-missing>
+										<spring-boot-artifactory-repo>${spring-boot-artifactory-repo}</spring-boot-artifactory-repo>
 										<github-tag>${github-tag}</github-tag>
+										<jooq-version>${jooq.version}</jooq-version>
+										<spring-boot-version>${revision}</spring-boot-version>
+										<spring-amqp-version>${spring-amqp.version}</spring-amqp-version>
+										<spring-data-couchbase-version>${flattenedpom.version.org.springframework.data.spring-data-couchbase}</spring-data-couchbase-version>
+										<spring-data-commons-version>${flattenedpom.version.org.springframework.data.spring-data-commons}</spring-data-commons-version>
+										<spring-data-jpa-version>${flattenedpom.version.org.springframework.data.spring-data-jpa}</spring-data-jpa-version>
+										<spring-data-jdbc-version>${flattenedpom.version.org.springframework.data.spring-data-jdbc}</spring-data-jdbc-version>
+										<spring-data-mongodb-version>${flattenedpom.version.org.springframework.data.spring-data-mongodb}</spring-data-mongodb-version>
+										<spring-data-neo4j-version>${flattenedpom.version.org.springframework.data.spring-data-neo4j}</spring-data-neo4j-version>
+										<spring-data-rest-version>${flattenedpom.version.org.springframework.data.spring-data-rest-core}</spring-data-rest-version>
+										<spring-data-solr-version>${flattenedpom.version.org.springframework.data.spring-data-solr}</spring-data-solr-version>
+										<spring-framework-version>${spring-framework.version}</spring-framework-version>
+										<spring-integration-version>${spring-integration.version}</spring-integration-version>
+										<spring-security-version>${spring-security.version}</spring-security-version>
+										<spring-webservices-version>${spring-ws.version}</spring-webservices-version>
 									</attributes>
 								</configuration>
 							</execution>
@@ -1450,12 +1515,12 @@
 											input="${version-type}" regexp="(RC)\d+" replace="MILESTONE" />
 										<propertyregex property="version-type" override="true"
 											input="${version-type}" regexp="BUILD-(.*)" replace="SNAPSHOT" />
-										<stringutil string="${version-type}" property="spring-boot-repo">
+										<stringutil string="${version-type}" property="spring-boot-artifactory-repo">
 											<lowercase />
 										</stringutil>
 										<var name="github-tag" value="v${revision}" />
 										<propertyregex property="github-tag" override="true"
-											input="${github-tag}" regexp=".*SNAPSHOT" replace="master" />
+											input="${github-tag}" regexp=".*SNAPSHOT" replace="2.1.x" />
 									</target>
 								</configuration>
 							</execution>

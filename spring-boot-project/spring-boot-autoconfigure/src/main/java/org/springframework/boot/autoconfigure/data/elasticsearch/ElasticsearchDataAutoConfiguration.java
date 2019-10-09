@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,6 +25,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.convert.ElasticsearchConverter;
 import org.springframework.data.elasticsearch.core.convert.MappingElasticsearchConverter;
@@ -49,10 +50,9 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 public class ElasticsearchDataAutoConfiguration {
 
 	@Bean
-	@ConditionalOnMissingBean
+	@ConditionalOnMissingBean(ElasticsearchOperations.class)
 	@ConditionalOnBean(Client.class)
-	public ElasticsearchTemplate elasticsearchTemplate(Client client,
-			ElasticsearchConverter converter) {
+	public ElasticsearchTemplate elasticsearchTemplate(Client client, ElasticsearchConverter converter) {
 		try {
 			return new ElasticsearchTemplate(client, converter);
 		}
@@ -63,8 +63,7 @@ public class ElasticsearchDataAutoConfiguration {
 
 	@Bean
 	@ConditionalOnMissingBean
-	public ElasticsearchConverter elasticsearchConverter(
-			SimpleElasticsearchMappingContext mappingContext) {
+	public ElasticsearchConverter elasticsearchConverter(SimpleElasticsearchMappingContext mappingContext) {
 		return new MappingElasticsearchConverter(mappingContext);
 	}
 

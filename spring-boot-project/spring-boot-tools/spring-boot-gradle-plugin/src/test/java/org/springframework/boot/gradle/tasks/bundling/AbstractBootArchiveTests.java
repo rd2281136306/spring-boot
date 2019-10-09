@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
 package org.springframework.boot.gradle.tasks.bundling;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,6 +35,7 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -73,8 +75,7 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 
 	private T task;
 
-	protected AbstractBootArchiveTests(Class<T> taskClass, String launcherClass,
-			String libPath, String classesPath) {
+	protected AbstractBootArchiveTests(Class<T> taskClass, String launcherClass, String libPath, String classesPath) {
 		this.taskClass = taskClass;
 		this.launcherClass = launcherClass;
 		this.libPath = libPath;
@@ -84,12 +85,9 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 	@Before
 	public void createTask() {
 		try {
-			this.project = ProjectBuilder.builder().withProjectDir(this.temp.newFolder())
-					.build();
-			this.project
-					.setDescription("Test project for " + this.taskClass.getSimpleName());
-			this.task = configure(
-					this.project.getTasks().create("testArchive", this.taskClass));
+			this.project = ProjectBuilder.builder().withProjectDir(this.temp.newFolder()).build();
+			this.project.setDescription("Test project for " + this.taskClass.getSimpleName());
+			this.task = configure(this.project.getTasks().create("testArchive", this.taskClass));
 		}
 		catch (IOException ex) {
 			throw new RuntimeException(ex);
@@ -102,10 +100,12 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		this.task.execute();
 		assertThat(this.task.getArchivePath()).exists();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getManifest().getMainAttributes().getValue("Main-Class"))
-					.isEqualTo(this.launcherClass);
-			assertThat(jarFile.getManifest().getMainAttributes().getValue("Start-Class"))
-					.isEqualTo("com.example.Main");
+			assertThat(jarFile.getManifest().getMainAttributes().getValue("Main-Class")).isEqualTo(this.launcherClass);
+			assertThat(jarFile.getManifest().getMainAttributes().getValue("Start-Class")).isEqualTo("com.example.Main");
+			assertThat(jarFile.getManifest().getMainAttributes().getValue("Spring-Boot-Classes"))
+					.isEqualTo(this.classesPath);
+			assertThat(jarFile.getManifest().getMainAttributes().getValue("Spring-Boot-Lib")).isEqualTo(this.libPath);
+			assertThat(jarFile.getManifest().getMainAttributes().getValue("Spring-Boot-Version")).isNotNull();
 		}
 	}
 
@@ -115,8 +115,8 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		this.task.classpath(jarFile("one.jar"), jarFile("two.jar"));
 		this.task.execute();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getEntry(this.libPath + "/one.jar")).isNotNull();
-			assertThat(jarFile.getEntry(this.libPath + "/two.jar")).isNotNull();
+			assertThat(jarFile.getEntry(this.libPath + "one.jar")).isNotNull();
+			assertThat(jarFile.getEntry(this.libPath + "two.jar")).isNotNull();
 		}
 	}
 
@@ -124,16 +124,13 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 	public void classpathFoldersArePackagedBeneathClassesPath() throws IOException {
 		this.task.setMainClassName("com.example.Main");
 		File classpathFolder = this.temp.newFolder();
-		File applicationClass = new File(classpathFolder,
-				"com/example/Application.class");
+		File applicationClass = new File(classpathFolder, "com/example/Application.class");
 		applicationClass.getParentFile().mkdirs();
 		applicationClass.createNewFile();
 		this.task.classpath(classpathFolder);
 		this.task.execute();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(
-					jarFile.getEntry(this.classesPath + "/com/example/Application.class"))
-							.isNotNull();
+			assertThat(jarFile.getEntry(this.classesPath + "com/example/Application.class")).isNotNull();
 		}
 	}
 
@@ -144,20 +141,16 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		File moduleInfoClass = new File(classpathFolder, "module-info.class");
 		moduleInfoClass.getParentFile().mkdirs();
 		moduleInfoClass.createNewFile();
-		File applicationClass = new File(classpathFolder,
-				"com/example/Application.class");
+		File applicationClass = new File(classpathFolder, "com/example/Application.class");
 		applicationClass.getParentFile().mkdirs();
 		applicationClass.createNewFile();
 		this.task.classpath(classpathFolder);
 		this.task.execute();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(
-					jarFile.getEntry(this.classesPath + "/com/example/Application.class"))
-							.isNotNull();
+			assertThat(jarFile.getEntry(this.classesPath + "com/example/Application.class")).isNotNull();
 			assertThat(jarFile.getEntry("com/example/Application.class")).isNull();
 			assertThat(jarFile.getEntry("module-info.class")).isNotNull();
-			assertThat(jarFile.getEntry(this.classesPath + "/module-info.class"))
-					.isNull();
+			assertThat(jarFile.getEntry(this.classesPath + "/module-info.class")).isNull();
 		}
 	}
 
@@ -168,8 +161,8 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		this.task.setClasspath(this.task.getProject().files(jarFile("two.jar")));
 		this.task.execute();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getEntry(this.libPath + "/one.jar")).isNull();
-			assertThat(jarFile.getEntry(this.libPath + "/two.jar")).isNotNull();
+			assertThat(jarFile.getEntry(this.libPath + "one.jar")).isNull();
+			assertThat(jarFile.getEntry(this.libPath + "two.jar")).isNotNull();
 		}
 	}
 
@@ -180,8 +173,8 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		this.task.setClasspath(jarFile("two.jar"));
 		this.task.execute();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getEntry(this.libPath + "/one.jar")).isNull();
-			assertThat(jarFile.getEntry(this.libPath + "/two.jar")).isNotNull();
+			assertThat(jarFile.getEntry(this.libPath + "one.jar")).isNull();
+			assertThat(jarFile.getEntry(this.libPath + "two.jar")).isNotNull();
 		}
 	}
 
@@ -196,28 +189,27 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 	}
 
 	@Test
-	public void loaderIsWrittenToTheRootOfTheJar() throws IOException {
+	public void loaderIsWrittenToTheRootOfTheJarAfterManifest() throws IOException {
 		this.task.setMainClassName("com.example.Main");
 		this.task.execute();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getEntry(
-					"org/springframework/boot/loader/LaunchedURLClassLoader.class"))
-							.isNotNull();
+			assertThat(jarFile.getEntry("org/springframework/boot/loader/LaunchedURLClassLoader.class")).isNotNull();
 			assertThat(jarFile.getEntry("org/springframework/boot/loader/")).isNotNull();
+		}
+		// gh-16698
+		try (ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(this.task.getArchivePath()))) {
+			assertThat(zipInputStream.getNextEntry().getName()).isEqualTo("META-INF/");
+			assertThat(zipInputStream.getNextEntry().getName()).isEqualTo("META-INF/MANIFEST.MF");
 		}
 	}
 
 	@Test
-	public void loaderIsWrittenToTheRootOfTheJarWhenUsingThePropertiesLauncher()
-			throws IOException {
+	public void loaderIsWrittenToTheRootOfTheJarWhenUsingThePropertiesLauncher() throws IOException {
 		this.task.setMainClassName("com.example.Main");
 		this.task.execute();
-		this.task.getManifest().getAttributes().put("Main-Class",
-				"org.springframework.boot.loader.PropertiesLauncher");
+		this.task.getManifest().getAttributes().put("Main-Class", "org.springframework.boot.loader.PropertiesLauncher");
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getEntry(
-					"org/springframework/boot/loader/LaunchedURLClassLoader.class"))
-							.isNotNull();
+			assertThat(jarFile.getEntry("org/springframework/boot/loader/LaunchedURLClassLoader.class")).isNotNull();
 			assertThat(jarFile.getEntry("org/springframework/boot/loader/")).isNotNull();
 		}
 	}
@@ -229,9 +221,8 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		this.task.requiresUnpack("**/one.jar");
 		this.task.execute();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getEntry(this.libPath + "/one.jar").getComment())
-					.startsWith("UNPACK:");
-			assertThat(jarFile.getEntry(this.libPath + "/two.jar").getComment()).isNull();
+			assertThat(jarFile.getEntry(this.libPath + "one.jar").getComment()).startsWith("UNPACK:");
+			assertThat(jarFile.getEntry(this.libPath + "two.jar").getComment()).isNull();
 		}
 	}
 
@@ -242,9 +233,8 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		this.task.requiresUnpack((element) -> element.getName().endsWith("two.jar"));
 		this.task.execute();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getEntry(this.libPath + "/two.jar").getComment())
-					.startsWith("UNPACK:");
-			assertThat(jarFile.getEntry(this.libPath + "/one.jar").getComment()).isNull();
+			assertThat(jarFile.getEntry(this.libPath + "two.jar").getComment()).startsWith("UNPACK:");
+			assertThat(jarFile.getEntry(this.libPath + "one.jar").getComment()).isNull();
 		}
 	}
 
@@ -260,8 +250,7 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		assertThat(Files.readAllBytes(this.task.getArchivePath().toPath()))
 				.startsWith(new DefaultLaunchScript(null, properties).toByteArray());
 		try {
-			Set<PosixFilePermission> permissions = Files
-					.getPosixFilePermissions(this.task.getArchivePath().toPath());
+			Set<PosixFilePermission> permissions = Files.getPosixFilePermissions(this.task.getArchivePath().toPath());
 			assertThat(permissions).contains(PosixFilePermission.OWNER_EXECUTE);
 		}
 		catch (UnsupportedOperationException ex) {
@@ -273,12 +262,10 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 	public void customLaunchScriptCanBePrepended() throws IOException {
 		this.task.setMainClassName("com.example.Main");
 		File customScript = this.temp.newFile("custom.script");
-		Files.write(customScript.toPath(), Arrays.asList("custom script"),
-				StandardOpenOption.CREATE);
+		Files.write(customScript.toPath(), Arrays.asList("custom script"), StandardOpenOption.CREATE);
 		this.task.launchScript((configuration) -> configuration.setScript(customScript));
 		this.task.execute();
-		assertThat(Files.readAllBytes(this.task.getArchivePath().toPath()))
-				.startsWith("custom script".getBytes());
+		assertThat(Files.readAllBytes(this.task.getArchivePath().toPath())).startsWith("custom script".getBytes());
 	}
 
 	@Test
@@ -286,46 +273,38 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		this.task.setMainClassName("com.example.Main");
 		this.task.launchScript((configuration) -> {
 			configuration.getProperties().put("initInfoProvides", "provides");
-			configuration.getProperties().put("initInfoShortDescription",
-					"short description");
+			configuration.getProperties().put("initInfoShortDescription", "short description");
 			configuration.getProperties().put("initInfoDescription", "description");
 		});
 		this.task.execute();
 		byte[] bytes = Files.readAllBytes(this.task.getArchivePath().toPath());
 		assertThat(bytes).containsSequence("Provides:          provides".getBytes());
-		assertThat(bytes)
-				.containsSequence("Short-Description: short description".getBytes());
+		assertThat(bytes).containsSequence("Short-Description: short description".getBytes());
 		assertThat(bytes).containsSequence("Description:       description".getBytes());
 	}
 
 	@Test
 	public void customMainClassInTheManifestIsHonored() throws IOException {
 		this.task.setMainClassName("com.example.Main");
-		this.task.getManifest().getAttributes().put("Main-Class",
-				"com.example.CustomLauncher");
+		this.task.getManifest().getAttributes().put("Main-Class", "com.example.CustomLauncher");
 		this.task.execute();
 		assertThat(this.task.getArchivePath()).exists();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
 			assertThat(jarFile.getManifest().getMainAttributes().getValue("Main-Class"))
 					.isEqualTo("com.example.CustomLauncher");
-			assertThat(jarFile.getManifest().getMainAttributes().getValue("Start-Class"))
-					.isEqualTo("com.example.Main");
-			assertThat(jarFile.getEntry(
-					"org/springframework/boot/loader/LaunchedURLClassLoader.class"))
-							.isNull();
+			assertThat(jarFile.getManifest().getMainAttributes().getValue("Start-Class")).isEqualTo("com.example.Main");
+			assertThat(jarFile.getEntry("org/springframework/boot/loader/LaunchedURLClassLoader.class")).isNull();
 		}
 	}
 
 	@Test
 	public void customStartClassInTheManifestIsHonored() throws IOException {
 		this.task.setMainClassName("com.example.Main");
-		this.task.getManifest().getAttributes().put("Start-Class",
-				"com.example.CustomMain");
+		this.task.getManifest().getAttributes().put("Start-Class", "com.example.CustomMain");
 		this.task.execute();
 		assertThat(this.task.getArchivePath()).exists();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getManifest().getMainAttributes().getValue("Main-Class"))
-					.isEqualTo(this.launcherClass);
+			assertThat(jarFile.getManifest().getMainAttributes().getValue("Main-Class")).isEqualTo(this.launcherClass);
 			assertThat(jarFile.getManifest().getMainAttributes().getValue("Start-Class"))
 					.isEqualTo("com.example.CustomMain");
 		}
@@ -341,8 +320,7 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 			Enumeration<JarEntry> entries = jarFile.entries();
 			while (entries.hasMoreElements()) {
 				JarEntry entry = entries.nextElement();
-				assertThat(entry.getTime())
-						.isEqualTo(BootZipCopyAction.CONSTANT_TIME_FOR_ZIP_ENTRIES);
+				assertThat(entry.getTime()).isEqualTo(BootZipCopyAction.CONSTANT_TIME_FOR_ZIP_ENTRIES);
 			}
 		}
 	}
@@ -375,8 +353,7 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		this.task.execute();
 		assertThat(this.task.getArchivePath()).exists();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getEntry(this.libPath + "/spring-boot-devtools-0.1.2.jar"))
-					.isNull();
+			assertThat(jarFile.getEntry(this.libPath + "spring-boot-devtools-0.1.2.jar")).isNull();
 		}
 	}
 
@@ -388,8 +365,7 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 		this.task.execute();
 		assertThat(this.task.getArchivePath()).exists();
 		try (JarFile jarFile = new JarFile(this.task.getArchivePath())) {
-			assertThat(jarFile.getEntry(this.libPath + "/spring-boot-devtools-0.1.2.jar"))
-					.isNotNull();
+			assertThat(jarFile.getEntry(this.libPath + "spring-boot-devtools-0.1.2.jar")).isNotNull();
 		}
 	}
 
@@ -415,23 +391,19 @@ public abstract class AbstractBootArchiveTests<T extends Jar & BootArchive> {
 	}
 
 	@Test
-	public void loaderIsWrittenFirstThenApplicationClassesThenLibraries()
-			throws IOException {
+	public void loaderIsWrittenFirstThenApplicationClassesThenLibraries() throws IOException {
 		this.task.setMainClassName("com.example.Main");
 		File classpathFolder = this.temp.newFolder();
-		File applicationClass = new File(classpathFolder,
-				"com/example/Application.class");
+		File applicationClass = new File(classpathFolder, "com/example/Application.class");
 		applicationClass.getParentFile().mkdirs();
 		applicationClass.createNewFile();
-		this.task.classpath(classpathFolder, jarFile("first-library.jar"),
-				jarFile("second-library.jar"), jarFile("third-library.jar"));
+		this.task.classpath(classpathFolder, jarFile("first-library.jar"), jarFile("second-library.jar"),
+				jarFile("third-library.jar"));
 		this.task.requiresUnpack("second-library.jar");
 		this.task.execute();
-		assertThat(getEntryNames(this.task.getArchivePath())).containsSubsequence(
-				"org/springframework/boot/loader/",
-				this.classesPath + "/com/example/Application.class",
-				this.libPath + "/first-library.jar", this.libPath + "/second-library.jar",
-				this.libPath + "/third-library.jar");
+		assertThat(getEntryNames(this.task.getArchivePath())).containsSubsequence("org/springframework/boot/loader/",
+				this.classesPath + "com/example/Application.class", this.libPath + "first-library.jar",
+				this.libPath + "second-library.jar", this.libPath + "third-library.jar");
 	}
 
 	protected File jarFile(String name) throws IOException {

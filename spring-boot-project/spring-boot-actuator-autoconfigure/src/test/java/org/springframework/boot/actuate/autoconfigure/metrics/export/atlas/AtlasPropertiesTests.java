@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,8 +41,7 @@ public class AtlasPropertiesTests {
 		assertThat(properties.getUri()).isEqualTo(config.uri());
 		assertThat(properties.getMeterTimeToLive()).isEqualTo(config.meterTTL());
 		assertThat(properties.isLwcEnabled()).isEqualTo(config.lwcEnabled());
-		assertThat(properties.getConfigRefreshFrequency())
-				.isEqualTo(config.configRefreshFrequency());
+		assertThat(properties.getConfigRefreshFrequency()).isEqualTo(config.configRefreshFrequency());
 		assertThat(properties.getConfigTimeToLive()).isEqualTo(config.configTTL());
 		assertThat(properties.getConfigUri()).isEqualTo(config.configUri());
 		assertThat(properties.getEvalUri()).isEqualTo(config.evalUri());

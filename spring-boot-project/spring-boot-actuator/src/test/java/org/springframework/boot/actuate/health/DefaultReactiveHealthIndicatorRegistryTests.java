@@ -1,11 +1,11 @@
 /*
- * Copyright 2012-2018 the original author or authors.
+ * Copyright 2012-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,10 +44,8 @@ public class DefaultReactiveHealthIndicatorRegistryTests {
 
 	@Before
 	public void setUp() {
-		given(this.one.health()).willReturn(
-				Mono.just(new Health.Builder().unknown().withDetail("1", "1").build()));
-		given(this.two.health()).willReturn(
-				Mono.just(new Health.Builder().unknown().withDetail("2", "2").build()));
+		given(this.one.health()).willReturn(Mono.just(new Health.Builder().unknown().withDetail("1", "1").build()));
+		given(this.two.health()).willReturn(Mono.just(new Health.Builder().unknown().withDetail("2", "2").build()));
 		this.registry = new DefaultReactiveHealthIndicatorRegistry();
 	}
 
@@ -63,10 +61,8 @@ public class DefaultReactiveHealthIndicatorRegistryTests {
 	@Test
 	public void registerAlreadyUsedName() {
 		this.registry.register("one", this.one);
-		assertThatIllegalStateException()
-				.isThrownBy(() -> this.registry.register("one", this.two))
-				.withMessageContaining(
-						"HealthIndicator with name 'one' already registered");
+		assertThatIllegalStateException().isThrownBy(() -> this.registry.register("one", this.two))
+				.withMessageContaining("HealthIndicator with name 'one' already registered");
 	}
 
 	@Test
@@ -101,8 +97,7 @@ public class DefaultReactiveHealthIndicatorRegistryTests {
 	public void getAllIsImmutable() {
 		this.registry.register("one", this.one);
 		Map<String, ReactiveHealthIndicator> snapshot = this.registry.getAll();
-		assertThatExceptionOfType(UnsupportedOperationException.class)
-				.isThrownBy(snapshot::clear);
+		assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(snapshot::clear);
 	}
 
 }
