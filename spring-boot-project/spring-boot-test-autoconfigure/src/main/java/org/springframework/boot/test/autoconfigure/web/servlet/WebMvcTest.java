@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,8 +41,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Annotation that can be used in combination with {@code @RunWith(SpringRunner.class)}
- * for a typical Spring MVC test. Can be used when a test focuses <strong>only</strong> on
+ * Annotation that can be used for a Spring MVC test that focuses <strong>only</strong> on
  * Spring MVC components.
  * <p>
  * Using this annotation will disable full auto-configuration and instead apply only
@@ -64,6 +63,9 @@ import org.springframework.test.web.servlet.MockMvc;
  * If you are looking to load your full application configuration and use MockMVC, you
  * should consider {@link SpringBootTest @SpringBootTest} combined with
  * {@link AutoConfigureMockMvc @AutoConfigureMockMvc} rather than this annotation.
+ * <p>
+ * When using JUnit 4, this annotation should be used in combination with
+ * {@code @RunWith(SpringRunner.class)}.
  *
  * @author Phillip Webb
  * @author Artsiom Yudovin

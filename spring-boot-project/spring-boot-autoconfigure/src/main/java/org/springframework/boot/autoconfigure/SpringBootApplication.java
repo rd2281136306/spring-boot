@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,19 +25,23 @@ import java.lang.annotation.Target;
 
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.context.TypeExcludeFilter;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.core.annotation.AliasFor;
+import org.springframework.data.repository.Repository;
 
 /**
  * Indicates a {@link Configuration configuration} class that declares one or more
  * {@link Bean @Bean} methods and also triggers {@link EnableAutoConfiguration
- * auto-configuration} and {@link ComponentScan component scanning}. This is a convenience
- * annotation that is equivalent to declaring {@code @Configuration},
- * {@code @EnableAutoConfiguration} and {@code @ComponentScan}.
+ * auto-configuration}, {@link ComponentScan component scanning}, and
+ * {@link ConfigurationPropertiesScan configuration properties scanning}. This is a
+ * convenience annotation that is equivalent to declaring {@code @Configuration},
+ * {@code @EnableAutoConfiguration}, {@code @ComponentScan}, and
+ * {@code @ConfigurationPropertiesScan}.
  *
  * @author Phillip Webb
  * @author Stephane Nicoll
@@ -50,9 +54,9 @@ import org.springframework.core.annotation.AliasFor;
 @Inherited
 @SpringBootConfiguration
 @EnableAutoConfiguration
-@ComponentScan(excludeFilters = {
-		@Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
+@ComponentScan(excludeFilters = { @Filter(type = FilterType.CUSTOM, classes = TypeExcludeFilter.class),
 		@Filter(type = FilterType.CUSTOM, classes = AutoConfigurationExcludeFilter.class) })
+@ConfigurationPropertiesScan
 public @interface SpringBootApplication {
 
 	/**
@@ -74,6 +78,12 @@ public @interface SpringBootApplication {
 	/**
 	 * Base packages to scan for annotated components. Use {@link #scanBasePackageClasses}
 	 * for a type-safe alternative to String-based package names.
+	 * <p>
+	 * <strong>Note:</strong> this setting is an alias for
+	 * {@link ComponentScan @ComponentScan} only. It has no effect on {@code @Entity}
+	 * scanning or Spring Data {@link Repository} scanning. For those you should add
+	 * {@link org.springframework.boot.autoconfigure.domain.EntityScan @EntityScan} and
+	 * {@code @Enable...Repositories} annotations.
 	 * @return base packages to scan
 	 * @since 1.3.0
 	 */
@@ -86,6 +96,12 @@ public @interface SpringBootApplication {
 	 * <p>
 	 * Consider creating a special no-op marker class or interface in each package that
 	 * serves no purpose other than being referenced by this attribute.
+	 * <p>
+	 * <strong>Note:</strong> this setting is an alias for
+	 * {@link ComponentScan @ComponentScan} only. It has no effect on {@code @Entity}
+	 * scanning or Spring Data {@link Repository} scanning. For those you should add
+	 * {@link org.springframework.boot.autoconfigure.domain.EntityScan @EntityScan} and
+	 * {@code @Enable...Repositories} annotations.
 	 * @return base packages to scan
 	 * @since 1.3.0
 	 */
